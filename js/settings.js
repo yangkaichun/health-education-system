@@ -1,150 +1,100 @@
-// 後台設定功能
+// GitHub 設定
+const GITHUB_USERNAME = 'yangkaichun';
+const GITHUB_REPO = 'health-education-system';
+const GITHUB_TOKEN = ''; // 會在前端透過登入取得
 
-// 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
-    // 如果本地儲存中沒有主題設定，初始化默認值
-    if (!localStorage.getItem('topicSettings')) {
-        const defaultSettings = [];
-        for (let i = 1; i <= 30; i++) {
-            defaultSettings.push({
-                id: i,
-                name: `衛教主題 ${i}`,
-                youtubeUrl: ''
+// 儲存設定到 GitHub
+async function saveSettingsToGitHub(settings) {
+    try {
+        if (!GITHUB_TOKEN) {
+            // 如果尚未登入，先導向 GitHub 認證
+            await authenticateWithGitHub();
+            return; // 認證成功後會重新調用此函數
+        }
+        
+        // 首先獲取當前檔案 SHA (如果存在)
+        let fileSha = '';
+        try {
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/settings.json`, {
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json',
+                }
             });
-        }
-        localStorage.setItem('topicSettings', JSON.stringify(defaultSettings));
-    }
-    
-    loadTopicSettings();
-});
-
-// 載入主題設定
-function loadTopicSettings() {
-    const topicSettings = JSON.parse(localStorage.getItem('topicSettings') || '[]');
-    const tableBody = document.getElementById('topics-table-body');
-    tableBody.innerHTML = '';
-    
-    topicSettings.forEach((topic) => {
-        const row = document.createElement('tr');
-        
-        // 主題編號
-        const idCell = document.createElement('td');
-        idCell.setAttribute('data-label', '主題編號');
-        idCell.className = 'topic-number';
-        idCell.textContent = topic.id;
-        row.appendChild(idCell);
-        
-        // 主題名稱
-        const nameCell = document.createElement('td');
-        nameCell.setAttribute('data-label', '主題名稱');
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.className = 'topic-name-input';
-        nameInput.value = topic.name;
-        nameInput.setAttribute('data-id', topic.id);
-        nameCell.appendChild(nameInput);
-        row.appendChild(nameCell);
-        
-        // YouTube 影片 URL
-        const urlCell = document.createElement('td');
-        urlCell.setAttribute('data-label', 'YouTube 影片 URL');
-        
-        const urlContainer = document.createElement('div');
-        urlContainer.className = 'url-container';
-        
-        // 如果有 YouTube URL，顯示縮圖預覽
-        if (topic.youtubeUrl) {
-            const youtubeId = getYoutubeId(topic.youtubeUrl);
-            if (youtubeId) {
-                const preview = document.createElement('div');
-                preview.className = 'youtube-preview';
-                preview.style.backgroundImage = `url(https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg)`;
-                urlContainer.appendChild(preview);
-            }
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message);
+            fileSha = data.sha;
+        } catch (error) {
+            // 檔案可能不存在，繼續執行
+            console.log('File may not exist yet:', error);
         }
         
-        const urlInputGroup = document.createElement('div');
-        urlInputGroup.className = 'url-input-group';
+        // 將設定轉換為 Base64 編碼
+        const content = btoa(JSON.stringify(settings, null, 2));
         
-        const urlInput = document.createElement('input');
-        urlInput.type = 'text';
-        urlInput.className = 'youtube-url-input';
-        urlInput.value = topic.youtubeUrl;
-        urlInput.setAttribute('data-id', topic.id);
-        urlInput.placeholder = '例如: https://www.youtube.com/watch?v=XXXXXXXX';
-        urlInput.onchange = function() {
-            // 當 URL 變更時更新預覽
-            const container = this.closest('.url-container');
-            const oldPreview = container.querySelector('.youtube-preview');
-            if (oldPreview) {
-                oldPreview.remove();
-            }
-            
-            const youtubeId = getYoutubeId(this.value);
-            if (youtubeId) {
-                const preview = document.createElement('div');
-                preview.className = 'youtube-preview';
-                preview.style.backgroundImage = `url(https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg)`;
-                container.insertBefore(preview, container.firstChild);
-            }
-        };
+        // 提交到 GitHub
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/settings.json`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: 'Update settings',
+                content: content,
+                sha: fileSha || undefined
+            })
+        });
         
-        urlInputGroup.appendChild(urlInput);
-        urlContainer.appendChild(urlInputGroup);
-        urlCell.appendChild(urlContainer);
-        row.appendChild(urlCell);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
         
-        // 操作按鈕
-        const actionCell = document.createElement('td');
-        actionCell.setAttribute('data-label', '操作');
-        
-        const resetButton = document.createElement('button');
-        resetButton.className = 'reset-button';
-        resetButton.innerHTML = '<i class="fas fa-undo"></i>';
-        resetButton.title = '重置此主題設定';
-        resetButton.onclick = function() {
-            resetTopic(topic.id);
-        };
-        
-        actionCell.appendChild(resetButton);
-        row.appendChild(actionCell);
-        
-        tableBody.appendChild(row);
-    });
-}
-
-// 從 YouTube URL 中提取視頻 ID
-function getYoutubeId(url) {
-    if (!url) return null;
-    
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    
-    return (match && match[2].length === 11) ? match[2] : null;
-}
-
-// 重置單個主題設定
-function resetTopic(topicId) {
-    if (!confirm(`確定要重置主題 ${topicId} 的設定嗎？`)) {
-        return;
+        // 顯示成功訊息
+        showSuccessMessage('設定已成功儲存到 GitHub');
+    } catch (error) {
+        alert('儲存到 GitHub 失敗: ' + error.message);
     }
-    
-    const topicSettings = JSON.parse(localStorage.getItem('topicSettings') || '[]');
-    const index = topicSettings.findIndex(topic => topic.id === topicId);
-    
-    if (index >= 0) {
-        topicSettings[index] = {
-            id: topicId,
-            name: `衛教主題 ${topicId}`,
-            youtubeUrl: ''
-        };
+}
+
+// 從 GitHub 載入設定
+async function loadSettingsFromGitHub() {
+    try {
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/settings.json`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
         
-        localStorage.setItem('topicSettings', JSON.stringify(topicSettings));
+        // 解碼 Base64 內容
+        const content = atob(data.content);
+        const settings = JSON.parse(content);
+        
+        // 儲存到本地
+        localStorage.setItem('topicSettings', JSON.stringify(settings));
+        
+        // 重新載入設定
         loadTopicSettings();
+        
+        return true;
+    } catch (error) {
+        console.error('從 GitHub 載入設定失敗:', error);
+        return false;
     }
 }
 
-// 儲存所有設定
+// GitHub 認證
+async function authenticateWithGitHub() {
+    // 使用 GitHub OAuth 流程
+    // 這需要在 GitHub 註冊一個 OAuth 應用
+    const CLIENT_ID = '您的GitHub應用Client ID';
+    const REDIRECT_URI = window.location.origin + '/settings.html';
+    
+    // 儲存當前URL，以便登入後返回
+    sessionStorage.setItem('settings_redirect', window.location.href);
+    
+    // 重定向到 GitHub 登入頁面
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=repo`;
+}
+
+// 修改儲存設定函數
 function saveAllSettings() {
     const topicSettings = JSON.parse(localStorage.getItem('topicSettings') || '[]');
     const nameInputs = document.querySelectorAll('.topic-name-input');
@@ -170,14 +120,66 @@ function saveAllSettings() {
         }
     });
     
-    // 儲存設定
+    // 儲存到本地
     localStorage.setItem('topicSettings', JSON.stringify(topicSettings));
+    
+    // 儲存到 GitHub
+    saveSettingsToGitHub(topicSettings);
     
     // 顯示成功訊息
     document.getElementById('save-success-message').style.display = 'flex';
 }
 
-// 關閉成功訊息
-function closeSaveSuccessMessage() {
-    document.getElementById('save-success-message').style.display = 'none';
-}
+// 頁面載入時初始化
+document.addEventListener('DOMContentLoaded', async function() {
+    // 檢查 URL 是否包含 OAuth 回調碼
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+        // 獲取 token (這需要一個後端服務或代理)
+        try {
+            // 實際場景中，這應該發送到一個安全的後端服務
+            // 為了示範，假設我們有一個獲取token的函數
+            const token = await getGitHubToken(code);
+            localStorage.setItem('github_token', token);
+            GITHUB_TOKEN = token;
+            
+            // 清除 URL 參數
+            window.history.replaceState({}, document.title, 'settings.html');
+            
+            // 如果有之前的重定向，返回
+            const redirect = sessionStorage.getItem('settings_redirect');
+            if (redirect) {
+                sessionStorage.removeItem('settings_redirect');
+                window.location.href = redirect;
+                return;
+            }
+        } catch (error) {
+            console.error('獲取 GitHub token 失敗:', error);
+        }
+    }
+    
+    // 從localStorage或URL獲取token
+    GITHUB_TOKEN = localStorage.getItem('github_token');
+    
+    // 嘗試從 GitHub 載入設定
+    const loaded = await loadSettingsFromGitHub();
+    if (!loaded) {
+        // 如果無法從 GitHub 載入，使用本地設定
+        if (!localStorage.getItem('topicSettings')) {
+            const defaultSettings = [];
+            for (let i = 1; i <= 30; i++) {
+                defaultSettings.push({
+                    id: i,
+                    name: `衛教主題 ${i}`,
+                    youtubeUrl: ''
+                });
+            }
+            localStorage.setItem('topicSettings', JSON.stringify(defaultSettings));
+        }
+    }
+    
+    // 載入設定到頁面
+    loadTopicSettings();
+});
