@@ -1,0 +1,120 @@
+/* 設定頁面特定樣式 */
+#topics-table input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+#topics-table input[type="text"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px rgba(74, 155, 209, 0.3);
+}
+
+.topic-number {
+    font-weight: 500;
+    text-align: center;
+}
+
+.reset-button {
+    background-color: #6c757d;
+    padding: 6px 10px;
+    margin-left: 5px;
+}
+
+.reset-button:hover {
+    background-color: #5a6268;
+}
+
+#save-settings-button {
+    background-color: var(--secondary-color);
+    padding: 10px 20px;
+}
+
+#save-settings-button:hover {
+    background-color: #449d44;
+}
+
+.youtube-preview {
+    width: 120px;
+    height: 67px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 4px;
+    display: inline-block;
+    margin-right: 10px;
+    vertical-align: middle;
+    position: relative;
+}
+
+.youtube-preview::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
+}
+
+.youtube-preview::after {
+    content: '\f167';
+    font-family: 'Font Awesome 5 Brands';
+    position: absolute;
+    color: #ff0000;
+    font-size: 24px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.url-container {
+    display: flex;
+    align-items: center;
+}
+
+.url-input-group {
+    flex: 1;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    #topics-table thead {
+        display: none;
+    }
+    
+    #topics-table tbody tr {
+        display: block;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        padding: 10px;
+    }
+    
+    #topics-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px dotted var(--border-color);
+        padding: 8px 0;
+    }
+    
+    #topics-table tbody td:last-child {
+        border-bottom: none;
+    }
+    
+    #topics-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 500;
+        margin-right: 10px;
+    }
+    
+    .url-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .youtube-preview {
+        margin-bottom: 10px;
+    }
+}
