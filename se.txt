@@ -1,0 +1,21 @@
+health_education_system/
+│
+├── index.html             # 首頁 (QR 掃描、影片播放、問卷填寫)
+├── admin.html             # 管理頁面 (結果列表、郵件設置)
+│
+├── css/
+│   ├── main.css           # 主要樣式
+│   ├── index.css          # 首頁特定樣式
+│   └── admin.css          # 管理頁面特定樣式
+│
+├── js/
+│   ├── qrcode.js          # QR Code 掃描功能
+│   ├── video-player.js    # 影片播放控制
+│   ├── survey.js          # 問卷功能
+│   ├── results.js         # 結果管理功能
+│   └── email-settings.js  # 郵件設置功能
+│
+└── videos/                # 衛教影片存放目錄
+    ├── topic1.mp4
+    ├── topic2.mp4
+    └── ...
