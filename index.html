@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>衛教影片管理系統</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-heartbeat"></i> 衛教影片管理系統</h1>
+            <nav>
+                <a href="index.html" class="active">首頁</a>
+                <a href="admin.html">管理頁面</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card" id="qr-section">
+            <h2>QR Code 掃描</h2>
+            <div class="qr-container">
+                <div class="input-group">
+                    <input type="text" id="qr-code" placeholder="請掃描 QR Code 或輸入代碼" required>
+                    <button id="scan-button" onclick="startScanner()">
+                        <i class="fas fa-qrcode"></i> 掃描 QR Code
+                    </button>
+                </div>
+                <div id="scanner-container" style="display: none;">
+                    <div id="qr-reader"></div>
+                    <button class="close-button" onclick="closeScanner()">
+                        <i class="fas fa-times"></i> 關閉掃描器
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="card" id="topic-section">
+            <h2>選擇衛教主題</h2>
+            <div id="topic-container" class="topic-grid">
+                <!-- 主題按鈕由 JavaScript 生成 -->
+            </div>
+        </section>
+
+        <section class="card" id="video-section" style="display: none;">
+            <h2 id="video-title">衛教影片播放</h2>
+            <div class="video-container">
+                <video id="video-player" controls>
+                    <source src="" type="video/mp4">
+                    您的瀏覽器不支援影片播放。
+                </video>
+                <div class="video-controls">
+                    <button id="replay-button" onclick="replayVideo()">
+                        <i class="fas fa-redo"></i> 重新播放
+                    </button>
+                </div>
+                <button id="survey-button" style="display: none;" onclick="showSurvey()">
+                    <i class="fas fa-clipboard-list"></i> 填寫問卷
+                </button>
+            </div>
+        </section>
+
+        <section class="card" id="survey-section" style="display: none;">
+            <h2>衛教問卷</h2>
+            <form id="survey-form">
+                <div id="questions-container">
+                    <!-- 問卷問題由 JavaScript 生成 -->
+                </div>
+                <button type="button" id="submit-survey" onclick="submitSurvey()">送出問卷</button>
+            </form>
+        </section>
+
+        <div id="success-message" class="modal">
+            <div class="modal-content">
+                <span class="success-icon"><i class="fas fa-check-circle"></i></span>
+                <h3>問卷已成功提交！</h3>
+                <p>感謝您的參與，將通知護理師與您說明。</p>
+                <button onclick="closeSuccessMessage()">關閉</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 衛教影片管理系統. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/qrcode.js"></script>
+    <script src="js/video-player.js"></script>
+    <script src="js/survey.js"></script>
+</body>
+</html>
