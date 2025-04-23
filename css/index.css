@@ -38,11 +38,15 @@
 
 /* 主題選擇區域樣式 */
 .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+    padding: 15px;
     background-color: #e9f4fd; /* 添加明顯的背景色 */
     border-radius: 8px;
     border: 2px solid var(--primary-color); /* 添加明顯的邊框 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加陰影效果 */
-    padding: 15px;
 }
 
 .topic-button {
@@ -54,17 +58,24 @@
     transition: all 0.3s;
     text-align: center;
     font-weight: 500;
+    color: #000000; /* 設定未選擇狀態下的文字顏色為黑色 */
 }
 
 .topic-button:hover {
+    background-color: rgba(74, 155, 209, 0.1);
+    border-color: var(--primary-color);
     transform: translateY(-2px); /* 增加懸停效果 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .topic-button.selected {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-dark);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 /* 影片區域樣式 */
 .video-container {
     display: flex;
