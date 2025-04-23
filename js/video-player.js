@@ -1,6 +1,5 @@
 // 影片播放控制
 let selectedTopic = null;
-const videoPlayer = document.getElementById('video-player');
 let lastKnownTime = 0;
 let isWatchingCompleted = false;
 let youtubePlayer = null;
@@ -194,3 +193,159 @@ function createYouTubePlayer(videoId) {
         playerVars: {
             'controls': 0,       // 不顯示控制條
             'rel': 0,            // 不顯示相關視頻
+            'showinfo': 0,       // 不顯示視頻標題等信息
+            'modestbranding': 1, // 減少 YouTube 標誌的顯示
+            'disablekb': 1       // 禁用鍵盤控制
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    event.target.playVideo();
+    
+    // 定期檢查播放進度
+    setInterval(function() {
+        if (youtubePlayer && youtubePlayer.getCurrentTime) {
+            const currentTime = youtubePlayer.getCurrentTime();
+            lastKnownTime = currentTime;
+            
+            // 儲存觀看狀態
+            saveWatchingStatus();
+        }
+    }, 1000);
+}
+
+function onPlayerStateChange(event) {
+    // 當視頻結束時 (0 = 已結束)
+    if (event.data === 0) {
+        isWatchingCompleted = true;
+        document.getElementById('survey-button').style.display = 'block';
+        
+        // 存儲觀看完成狀態
+        saveWatchingCompleted();
+    }
+    
+    // 如果用戶嘗試快進，重置到上次位置
+    if (event.data === 1) { // 1 = 正在播放
+        if (youtubePlayer.getCurrentTime() > lastKnownTime + 1.5) {
+            youtubePlayer.seekTo(lastKnownTime);
+        }
+    }
+}
+
+// 重新播放影片
+function replayVideo() {
+    if (youtubePlayer) {
+        youtubePlayer.seekTo(0);
+        youtubePlayer.playVideo();
+    } else if (document.getElementById('video-player')) {
+        const videoPlayer = document.getElementById('video-player');
+        videoPlayer.currentTime = 0;
+        videoPlayer.play();
+    }
+}
+
+// 顯示問卷
+function showSurvey() {
+    if (!isWatchingCompleted) {
+        alert('請先完整觀看影片後再填寫問卷！');
+        return;
+    }
+    
+    // 生成問卷
+    generateSurvey(selectedTopic);
+    
+    // 顯示問卷區域
+    document.getElementById('survey-section').style.display = 'block';
+    
+    // 滾動到問卷區域
+    document.getElementById('survey-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+// 保存用戶選擇
+function saveUserSelection(topicNumber) {
+    // 存儲當前用戶的選擇和狀態
+    const qrCode = document.getElementById('qr-code').value;
+    if (!qrCode) {
+        alert('請先掃描 QR Code 或輸入代碼！');
+        return false;
+    }
+    
+    // 存儲數據到 localStorage
+    const userData = {
+        qrCode: qrCode,
+        topic: topicNumber,
+        watchStatus: 'watching',
+        timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem('currentUserData', JSON.stringify(userData));
+    
+    // 更新或添加到結果列表
+    const results = JSON.parse(localStorage.getItem('surveyResults') || '[]');
+    const existingIndex = results.findIndex(item => item.qrCode === qrCode && item.topic === topicNumber);
+    
+    if (existingIndex >= 0) {
+        results[existingIndex].watchStatus = 'watching';
+        results[existingIndex].timestamp = userData.timestamp;
+    } else {
+        results.push(userData);
+    }
+    
+    localStorage.setItem('surveyResults', JSON.stringify(results));
+    return true;
+}
+
+// 儲存觀看狀態
+function saveWatchingStatus() {
+    if (!selectedTopic) return;
+    
+    const userData = JSON.parse(localStorage.getItem('currentUserData') || '{}');
+    const qrCode = userData.qrCode;
+    if (!qrCode) return;
+    
+    // 更新結果列表中的觀看狀態
+    const results = JSON.parse(localStorage.getItem('surveyResults') || '[]');
+    const existingIndex = results.findIndex(item => item.qrCode === qrCode && item.topic === selectedTopic);
+    
+    if (existingIndex >= 0) {
+        results[existingIndex].watchStatus = 'watching';
+        
+        // 如果使用 YouTube 播放器
+        if (youtubePlayer && youtubePlayer.getDuration) {
+            const duration = youtubePlayer.getDuration();
+            const currentTime = youtubePlayer.getCurrentTime();
+            results[existingIndex].progress = Math.floor((currentTime / duration) * 100) || 0;
+        } 
+        // 如果使用 HTML5 播放器
+        else if (document.getElementById('video-player')) {
+            const videoPlayer = document.getElementById('video-player');
+            results[existingIndex].progress = Math.floor((lastKnownTime / videoPlayer.duration) * 100) || 0;
+        }
+        
+        localStorage.setItem('surveyResults', JSON.stringify(results));
+    }
+}
+
+// 儲存觀看完成狀態
+function saveWatchingCompleted() {
+    if (!selectedTopic) return;
+    
+    const userData = JSON.parse(localStorage.getItem('currentUserData') || '{}');
+    const qrCode = userData.qrCode;
+    if (!qrCode) return;
+    
+    // 更新結果列表中的觀看狀態
+    const results = JSON.parse(localStorage.getItem('surveyResults') || '[]');
+    const existingIndex = results.findIndex(item => item.qrCode === qrCode && item.topic === selectedTopic);
+    
+    if (existingIndex >= 0) {
+        results[existingIndex].watchStatus = 'completed';
+        results[existingIndex].progress = 100;
+        localStorage.setItem('surveyResults', JSON.stringify(results));
+    }
+}
