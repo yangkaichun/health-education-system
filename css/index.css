@@ -1,0 +1,184 @@
+/* QR Code 掃描區域樣式 */
+.qr-container {
+    position: relative;
+}
+
+#qr-reader {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#scanner-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 999;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.close-button {
+    margin-top: 15px;
+    background-color: #ff4d4d;
+}
+
+.close-button:hover {
+    background-color: #cc0000;
+}
+
+/* 主題選擇區域樣式 */
+.topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.topic-button {
+    padding: 15px;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    font-weight: 500;
+}
+
+.topic-button:hover {
+    background-color: rgba(74, 155, 209, 0.1);
+    border-color: var(--primary-color);
+}
+
+.topic-button.selected {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-dark);
+}
+
+/* 影片區域樣式 */
+.video-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#video-player {
+    width: 100%;
+    max-width: 800px;
+    border-radius: 8px;
+    background-color: #000;
+}
+
+.video-controls {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+#replay-button {
+    background-color: #6c757d;
+}
+
+#replay-button:hover {
+    background-color: #5a6268;
+}
+
+#survey-button {
+    margin-top: 20px;
+    padding: 12px 25px;
+    font-size: 16px;
+    background-color: var(--secondary-color);
+}
+
+#survey-button:hover {
+    background-color: #449d44;
+}
+
+/* 問卷區域樣式 */
+.question-container {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: rgba(74, 155, 209, 0.05);
+    border-radius: 8px;
+}
+
+.question-title {
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-left: 15px;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.option-item input[type="radio"] {
+    cursor: pointer;
+}
+
+.option-item label {
+    cursor: pointer;
+}
+
+#submit-survey {
+    padding: 12px 25px;
+    font-size: 16px;
+    background-color: var(--secondary-color);
+    margin-top: 20px;
+    width: 100%;
+    max-width: 200px;
+}
+
+#submit-survey:hover {
+    background-color: #449d44;
+}
+
+/* 成功訊息樣式 */
+#success-message .modal-content {
+    text-align: center;
+    padding: 30px;
+}
+
+#success-message button {
+    margin-top: 20px;
+    background-color: var(--secondary-color);
+}
+
+#success-message button:hover {
+    background-color: #449d44;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .topic-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+    
+    .video-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .video-controls button {
+        width: 100%;
+    }
+}
