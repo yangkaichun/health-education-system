@@ -1,185 +1,102 @@
-// GitHub 設定
-const GITHUB_USERNAME = 'yangkaichun';
-const GITHUB_REPO = 'health-education-system';
-const GITHUB_TOKEN = ''; // 會在前端透過登入取得
-
-// 儲存設定到 GitHub
-async function saveSettingsToGitHub(settings) {
-    try {
-        if (!GITHUB_TOKEN) {
-            // 如果尚未登入，先導向 GitHub 認證
-            await authenticateWithGitHub();
-            return; // 認證成功後會重新調用此函數
-        }
-        
-        // 首先獲取當前檔案 SHA (如果存在)
-        let fileSha = '';
-        try {
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/settings.json`, {
-                headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
-                    'Content-Type': 'application/json',
-                }
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
-            fileSha = data.sha;
-        } catch (error) {
-            // 檔案可能不存在，繼續執行
-            console.log('File may not exist yet:', error);
-        }
-        
-        // 將設定轉換為 Base64 編碼
-        const content = btoa(JSON.stringify(settings, null, 2));
-        
-        // 提交到 GitHub
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/settings.json`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: 'Update settings',
-                content: content,
-                sha: fileSha || undefined
-            })
-        });
-        
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message);
-        
-        // 顯示成功訊息
-        showSuccessMessage('設定已成功儲存到 GitHub');
-    } catch (error) {
-        alert('儲存到 GitHub 失敗: ' + error.message);
-    }
-}
-
-// 從 GitHub 載入設定
-async function loadSettingsFromGitHub() {
-    try {
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/settings.json`);
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message);
-        
-        // 解碼 Base64 內容
-        const content = atob(data.content);
-        const settings = JSON.parse(content);
-        
-        // 儲存到本地
-        localStorage.setItem('topicSettings', JSON.stringify(settings));
-        
-        // 重新載入設定
-        loadTopicSettings();
-        
-        return true;
-    } catch (error) {
-        console.error('從 GitHub 載入設定失敗:', error);
-        return false;
-    }
-}
-
-// GitHub 認證
-async function authenticateWithGitHub() {
-    // 使用 GitHub OAuth 流程
-    // 這需要在 GitHub 註冊一個 OAuth 應用
-    const CLIENT_ID = '您的GitHub應用Client ID';
-    const REDIRECT_URI = window.location.origin + '/settings.html';
-    
-    // 儲存當前URL，以便登入後返回
-    sessionStorage.setItem('settings_redirect', window.location.href);
-    
-    // 重定向到 GitHub 登入頁面
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=repo`;
-}
-
-// 修改儲存設定函數
-function saveAllSettings() {
-    const topicSettings = JSON.parse(localStorage.getItem('topicSettings') || '[]');
-    const nameInputs = document.querySelectorAll('.topic-name-input');
-    const urlInputs = document.querySelectorAll('.youtube-url-input');
-    
-    // 更新主題名稱
-    nameInputs.forEach(input => {
-        const topicId = parseInt(input.getAttribute('data-id'));
-        const index = topicSettings.findIndex(topic => topic.id === topicId);
-        
-        if (index >= 0) {
-            topicSettings[index].name = input.value.trim() || `衛教主題 ${topicId}`;
-        }
-    });
-    
-    // 更新 YouTube URL
-    urlInputs.forEach(input => {
-        const topicId = parseInt(input.getAttribute('data-id'));
-        const index = topicSettings.findIndex(topic => topic.id === topicId);
-        
-        if (index >= 0) {
-            topicSettings[index].youtubeUrl = input.value.trim();
-        }
-    });
-    
-    // 儲存到本地
-    localStorage.setItem('topicSettings', JSON.stringify(topicSettings));
-    
-    // 儲存到 GitHub
-    saveSettingsToGitHub(topicSettings);
-    
-    // 顯示成功訊息
-    document.getElementById('save-success-message').style.display = 'flex';
-}
-
-// 頁面載入時初始化
-document.addEventListener('DOMContentLoaded', async function() {
-    // 檢查 URL 是否包含 OAuth 回調碼
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    
-    if (code) {
-        // 獲取 token (這需要一個後端服務或代理)
-        try {
-            // 實際場景中，這應該發送到一個安全的後端服務
-            // 為了示範，假設我們有一個獲取token的函數
-            const token = await getGitHubToken(code);
-            localStorage.setItem('github_token', token);
-            GITHUB_TOKEN = token;
-            
-            // 清除 URL 參數
-            window.history.replaceState({}, document.title, 'settings.html');
-            
-            // 如果有之前的重定向，返回
-            const redirect = sessionStorage.getItem('settings_redirect');
-            if (redirect) {
-                sessionStorage.removeItem('settings_redirect');
-                window.location.href = redirect;
-                return;
-            }
-        } catch (error) {
-            console.error('獲取 GitHub token 失敗:', error);
-        }
-    }
-    
-    // 從localStorage或URL獲取token
-    GITHUB_TOKEN = localStorage.getItem('github_token');
-    
-    // 嘗試從 GitHub 載入設定
-    const loaded = await loadSettingsFromGitHub();
-    if (!loaded) {
-        // 如果無法從 GitHub 載入，使用本地設定
-        if (!localStorage.getItem('topicSettings')) {
-            const defaultSettings = [];
-            for (let i = 1; i <= 30; i++) {
-                defaultSettings.push({
-                    id: i,
-                    name: `衛教主題 ${i}`,
-                    youtubeUrl: ''
-                });
-            }
-            localStorage.setItem('topicSettings', JSON.stringify(defaultSettings));
-        }
-    }
-    
-    // 載入設定到頁面
-    loadTopicSettings();
+let configDoc;
+db.collection("topics").doc("config").get().then(doc=>{
+  if(!doc.exists) db.collection("topics").doc("config").set({ list: [] });
+  configDoc = db.collection("topics").doc("config");
+  configDoc.onSnapshot(d=> render(d.data().list));
 });
+function render(list){
+  const div = document.getElementById("topics-settings");
+  div.innerHTML = list.map((t,i)=>`
+    <fieldset data-idx="${i}">
+      <legend>主題 ${i+1}</legend>
+      名稱：<input class="name" value="${t.name}"><br>
+      YouTube URL：<input class="url" value="${t.url}"><br>
+      <div class="survey">
+        ${t.survey.map((q,qi)=>`
+          <div data-qi="${qi}">
+            題目：<input class="qtext" value="${q.text}">
+            型態：
+            <select class="qtype">
+              <option value="tf" ${q.type==="tf"?"selected":""}>是非</option>
+              <option value="mc" ${q.type==="mc"?"selected":""}>選擇</option>
+            </select>
+            <button class="del-q">刪除題目</button><br>
+            ${q.type==="mc"?
+              q.options.map((o,oi)=>`
+                選項：<input class="opt" value="${o}">分數：<input class="opt-score" value="${q.scores[oi]}"><br>`
+              ).join(""):"分數True:<input class='score-true' value='${q.scoreTrue}'>False:<input class='score-false' value='${q.scoreFalse}'><br>`
+            }
+          </div>
+        `).join("")}
+      </div>
+      <button class="add-q">新增題目</button>
+      <button class="del-topic">刪除此主題</button>
+    </fieldset>
+  `).join("");
+  bindSettingsEvents();
+}
+function bindSettingsEvents(){
+  document.querySelectorAll(".add-q").forEach(btn=>{
+    btn.onclick=()=>{
+      const idx=btn.parentElement.dataset.idx*1;
+      const list=configDocList();
+      list[idx].survey.push({ text:"新題目", type:"tf", scoreTrue:1, scoreFalse:0, options:[], scores:[] });
+      configDoc.update({ list });
+    };
+  });
+  document.querySelectorAll(".del-q").forEach(btn=>{
+    btn.onclick=()=>{
+      const f=btn.parentElement.parentElement.parentElement;
+      const idx=f.dataset.idx*1, qi=btn.parentElement.dataset.qi*1;
+      const list=configDocList();
+      list[idx].survey.splice(qi,1);
+      configDoc.update({ list });
+    };
+  });
+  document.querySelectorAll(".del-topic").forEach(btn=>{
+    btn.onclick=()=>{
+      const idx=btn.parentElement.dataset.idx*1;
+      let list=configDocList();
+      list.splice(idx,1);
+      configDoc.update({ list });
+    };
+  });
+  document.querySelectorAll(".name, .url, .qtext, .qtype, .opt, .opt-score, .score-true, .score-false")
+    .forEach(inp=> inp.onchange = ()=> {
+      let list = configDocList();
+      const f=inp.closest("fieldset"), i=f.dataset.idx*1;
+      list[i].name = f.querySelector(".name").value;
+      list[i].url = f.querySelector(".url").value;
+      list[i].survey = Array.from(f.querySelectorAll(".survey > div")).map(div=>{
+        const type=div.querySelector(".qtype").value;
+        const text=div.querySelector(".qtext").value;
+        if(type==="tf"){
+          return {
+            text, type,
+            scoreTrue: Number(div.querySelector(".score-true").value),
+            scoreFalse: Number(div.querySelector(".score-false").value),
+            options:[], scores:[]
+          };
+        } else {
+          const options = Array.from(div.querySelectorAll(".opt")).map(i=>i.value);
+          const scores  = Array.from(div.querySelectorAll(".opt-score")).map(i=>Number(i.value));
+          return { text, type, options, scores };
+        }
+      });
+      configDoc.update({ list });
+    });
+}
+function configDocList(){
+  return JSON.parse(JSON.stringify(configDoc._delegate._document.data.value.mapValue.fields.list.arrayValue.values))
+    .map(v=> firebase.firestore.DocumentSnapshot._fromValue(v).data());
+}
+// 新增主題
+document.getElementById("add-topic").onclick = ()=>{
+  configDoc.get().then(d=>{
+    const list = d.data().list;
+    list.push({ name:"新主題", url:"", survey:[] });
+    configDoc.update({ list });
+  });
+};
+// 儲存全部（其實已即時存）
+document.getElementById("save-all").onclick = ()=> alert("所有變更已自動儲存");
