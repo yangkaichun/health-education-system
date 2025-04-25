@@ -1,218 +1,33 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>衛教影片管理系統</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/index.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
-</head>
-<body>
-    <header>
-        <div class="container">
-            <h1><i class="fas fa-heartbeat"></i> 衛教影片管理系統V1</h1>
-            <nav>
-                <a href="index.html" class="active">首頁</a>
-                <a href="admin.html">管理頁面</a>
-                <a href="settings.html">後台設定</a>
-            </nav>
-        </div>
-    </header>
+<!DOCTYPE html><html lang="zh-Hant"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="stylesheet" href="css/style.css"><title>衛教影片</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/emailjs-config.js"></script>
+</head><body>
+  <h2>掃描 QR Code</h2>
+  <input id="qr-result" readonly>
+  <button id="btn-scan">開啟相機掃描</button>
+  <div id="reader" style="width:300px;"></div>
 
-    <main class="container">
-        <section class="card" id="qr-section">
-            <h2>QR Code 掃描</h2>
-            <div class="qr-container">
-                <div class="input-group">
-                    <input type="text" id="qr-code" placeholder="請掃描 QR Code 或輸入代碼" required>
-                    <button id="scan-button" onclick="startScanner()">
-                        <i class="fas fa-qrcode"></i> 掃描 QR Code
-                    </button>
-                </div>
-                <div id="scanner-container" style="display: none;">
-                    <div id="qr-reader"></div>
-                    <button class="close-button" onclick="closeScanner()">
-                        <i class="fas fa-times"></i> 關閉掃描器
-                    </button>
-                </div>
-            </div>
-        </section>
+  <h3>選擇衛教主題</h3>
+  <form id="topic-form"><div id="topics"></div>
+    <button type="submit">送出</button>
+  </form>
 
-        <section class="card" id="topic-section">
-            <h2>選擇衛教主題</h2>
-            <div id="topic-container" class="topic-grid">
-                <!-- 主題按鈕由 JavaScript 生成 -->
-            </div>
-        </section>
+  <div id="video-section" class="hidden">
+    <video id="edu-video" width="320" controls controlsList="nodownload nofullscreen noremoteplayback"></video><br>
+    <button id="replay" class="hidden">重播</button>
+    <button id="to-survey" class="hidden">填寫問卷</button>
+  </div>
 
-        <section class="card" id="video-section" style="display: none;">
-            <h2 id="video-title">衛教影片播放</h2>
-            <div class="video-container">
-                <video id="video-player" controls>
-                    <source src="" type="video/mp4">
-                    您的瀏覽器不支援影片播放。
-                </video>
-                <div class="video-controls">
-                    <button id="replay-button" onclick="replayVideo()">
-                        <i class="fas fa-redo"></i> 重新播放
-                    </button>
-                </div>
-                <button id="survey-button" style="display: none;" onclick="showSurvey()">
-                    <i class="fas fa-clipboard-list"></i> 填寫問卷
-                </button>
-            </div>
-        </section>
+  <div id="survey-section" class="hidden">
+    <h3>問卷</h3>
+    <form id="survey-form"></form>
+  </div>
 
-        <section class="card" id="survey-section" style="display: none;">
-            <h2>衛教問卷</h2>
-            <form id="survey-form">
-                <div id="questions-container">
-                    <!-- 問卷問題由 JavaScript 生成 -->
-                </div>
-                <button type="button" id="submit-survey" onclick="submitSurvey()">送出問卷</button>
-            </form>
-        </section>
-
-        <div id="success-message" class="modal">
-            <div class="modal-content">
-                <span class="success-icon"><i class="fas fa-check-circle"></i></span>
-                <h3>問卷已成功提交！</h3>
-                <p>感謝您的參與，將通知護理師與您說明。</p>
-                <button onclick="closeSuccessMessage()">關閉</button>
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 衛教影片管理系統. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script src="js/qrcode.js"></script>
-    <script src="js/video-player.js"></script>
-    <script src="js/survey.js"></script>
-    <script>
-    // 覆寫 selectTopic 函數，選擇主題後直接播放影片並隱藏主題選擇區域
-    function selectTopic(topicNumber) {
-        // 清除之前選中的主題
-        const topicButtons = document.querySelectorAll('.topic-button');
-        topicButtons.forEach(button => {
-            button.classList.remove('selected');
-        });
-        
-        // 標記選中的主題
-        document.querySelector(`.topic-button[data-topic="${topicNumber}"]`).classList.add('selected');
-        selectedTopic = topicNumber;
-        
-        // 獲取主題設定
-        const topicSettings = JSON.parse(localStorage.getItem('topicSettings') || '[]');
-        const topicSetting = topicSettings.find(topic => topic.id === topicNumber) || {
-            id: topicNumber,
-            name: `主題 ${topicNumber}`,
-            youtubeUrl: ''
-        };
-        
-        // 隱藏主題選擇區域
-        document.getElementById('topic-section').style.display = 'none';
-        
-        // 顯示影片區域
-        document.getElementById('video-section').style.display = 'block';
-        document.getElementById('video-title').textContent = `衛教影片播放 - ${topicSetting.name}`;
-        
-        // 隱藏問卷區域
-        document.getElementById('survey-section').style.display = 'none';
-        
-        // 隱藏問卷按鈕
-        document.getElementById('survey-button').style.display = 'none';
-        
-        // 重置影片播放狀態
-        isWatchingCompleted = false;
-        lastKnownTime = 0;
-        
-        // 檢查是否有 YouTube URL
-        const youtubeId = topicSetting.youtubeUrl ? getYoutubeId(topicSetting.youtubeUrl) : null;
-        
-        // 影片容器
-        const videoContainer = document.querySelector('.video-container');
-        
-        // 移除現有的影片播放器
-        if (document.getElementById('video-player')) {
-            document.getElementById('video-player').remove();
-        }
-        
-        if (document.getElementById('youtube-player')) {
-            document.getElementById('youtube-player').remove();
-        }
-        
-        // 創建新的播放器
-        if (youtubeId) {
-            // 使用 YouTube 嵌入播放器
-            const iframe = document.createElement('iframe');
-            iframe.id = 'youtube-player';
-            iframe.width = '100%';
-            iframe.height = '450';
-            iframe.src = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&rel=0&modestbranding=1&controls=0`;
-            iframe.frameBorder = '0';
-            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-            iframe.allowFullscreen = true;
-            
-            // 插入到視頻容器的最前面
-            videoContainer.insertBefore(iframe, videoContainer.firstChild);
-            
-            // 初始化 YouTube API
-            initYouTubePlayer(youtubeId);
-        } else {
-            // 使用默認 HTML5 播放器
-            const video = document.createElement('video');
-            video.id = 'video-player';
-            video.controls = true;
-            
-            const source = document.createElement('source');
-            source.src = `videos/topic${topicNumber}.mp4`;
-            source.type = 'video/mp4';
-            
-            video.appendChild(source);
-            video.appendChild(document.createTextNode('您的瀏覽器不支援影片播放。'));
-            
-            // 插入到視頻容器的最前面
-            videoContainer.insertBefore(video, videoContainer.firstChild);
-            
-            // 自動播放影片
-            video.load();
-            video.play();
-            
-            // 重新綁定事件
-            initializeVideoPlayer();
-        }
-        
-        // 滾動到影片區域
-        document.getElementById('video-section').scrollIntoView({ behavior: 'smooth' });
-        
-        // 存儲用戶選擇
-        saveUserSelection(topicNumber);
-    }
-
-    // 修改成功提交問卷後的處理
-    function closeSuccessMessage() {
-        document.getElementById('success-message').style.display = 'none';
-        
-        // 重置表單
-        document.getElementById('survey-form').reset();
-        
-        // 滾動到頁面頂部
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // 隱藏問卷和影片區域
-        document.getElementById('survey-section').style.display = 'none';
-        document.getElementById('video-section').style.display = 'none';
-        
-        // 重新顯示主題選擇區域
-        document.getElementById('topic-section').style.display = 'block';
-    }
-    </script>
-</body>
-</html>
+  <script src="js/main.js"></script>
+</body></html>
