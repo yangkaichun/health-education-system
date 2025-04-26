@@ -2,10 +2,10 @@
 
 // 全域變數
 let isAuthenticated = false;
-const GITHUB_TOKEN_KEY = process.env.GITHUB_TOKEN;
+//const GITHUB_TOKEN_KEY = process.env.GITHUB_TOKEN;
 //const GITHUB_TOKEN_KEY = 'github_token';
-const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
-const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
+//const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
+//const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
 //const API_SERVER_URL = 'https://yangkaichun.github.io/health-education-system/'; 
 const API_SERVER_URL = 'http://localhost:3001'; 
 
