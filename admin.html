@@ -2,12 +2,26 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>管理設定</title>
+    <!-- 確保 CSS 路徑正確且按正確順序載入 -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/admin.css">
+    <!-- 預加載關鍵資源 -->
+    <link rel="preload" href="js/github-auth.js" as="script">
+    <link rel="preload" href="js/github-storage.js" as="script">
+    <!-- 可選：添加 Sortable.js 用於拖放排序 -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
+    <!-- 頁面加載指示器 -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">正在載入...</div>
+    </div>
+
     <header>
         <h1>衛教影片觀看系統</h1>
         <nav>
@@ -20,6 +34,11 @@
     </header>
 
     <main>
+        <!-- 系統訊息區域 -->
+        <div id="system-messages" class="system-messages">
+            <!-- 錯誤和狀態消息將顯示在這裡 -->
+        </div>
+
         <!-- GitHub 連接狀態區塊 -->
         <section id="github-status">
             <div class="status-container">
@@ -61,6 +80,9 @@
                     </thead>
                     <tbody id="topics-body">
                         <!-- 將由 JavaScript 動態生成 -->
+                        <tr>
+                            <td colspan="5" class="loading-message">載入中...</td>
+                        </tr>
                     </tbody>
                 </table>
                 <div class="table-actions">
@@ -81,6 +103,14 @@
                 <button id="clear-cache" class="action-button secondary">清除快取</button>
             </div>
             <p class="data-info">匯出功能可將目前系統中的所有設定和資料備份為 JSON 檔案。匯入功能可從備份檔案還原所有設定和資料。</p>
+            
+            <div class="advanced-actions" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #ddd;">
+                <h3 style="margin-bottom: 1rem; font-size: 1rem; color: #7f8c8d;">進階操作</h3>
+                <div style="display: flex; gap: 1rem;">
+                    <button id="check-connection-details" class="secondary-button">檢查詳細連接狀態</button>
+                    <button id="debug-system" class="secondary-button">系統診斷</button>
+                </div>
+            </div>
         </section>
 
         <!-- 衛教主題編輯彈窗 -->
@@ -124,6 +154,10 @@
                 <div id="questions-tab" class="tab-content">
                     <div id="questions-container">
                         <!-- 將由 JavaScript 動態生成 -->
+                        <div class="loading-indicator">
+                            <div class="spinner"></div>
+                            <div class="loading-text">載入問卷資料...</div>
+                        </div>
                     </div>
                     <div class="question-actions">
                         <button id="add-yes-no" class="action-button">新增是非題</button>
@@ -138,15 +172,198 @@
                 </div>
             </div>
         </div>
+        
+        <!-- 診斷訊息模態框 -->
+        <div id="diagnostic-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>系統診斷資訊</h3>
+                <div id="diagnostic-content" style="background: #f8f9fa; padding: 1rem; border-radius: 4px; max-height: 400px; overflow-y: auto; font-family: monospace; white-space: pre-wrap;">
+                    <!-- 診斷訊息將顯示在這裡 -->
+                </div>
+                <div style="margin-top: 1rem; text-align: right;">
+                    <button id="close-diagnostic" class="secondary-button">關閉</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer>
         <p>&copy; 2025 衛教影片觀看系統</p>
     </footer>
 
-    <!-- 自定義 JavaScript -->
+    <!-- 修正順序：先加載認證和存儲腳本 -->
     <script src="js/github-auth.js"></script>
     <script src="js/github-storage.js"></script>
+    
+    <!-- 再加載頁面特定腳本 -->
     <script src="js/admin.js"></script>
+    
+    <script>
+        // 頁面加載完成後隱藏加載指示器
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const loader = document.getElementById('page-loader');
+                if (loader) {
+                    loader.classList.add('hidden');
+                    setTimeout(function() {
+                        loader.remove();
+                    }, 300);
+                }
+            }, 500);
+            
+            // 添加進階診斷功能
+            const debugSystemBtn = document.getElementById('debug-system');
+            if (debugSystemBtn) {
+                debugSystemBtn.addEventListener('click', function() {
+                    const diagnosticModal = document.getElementById('diagnostic-modal');
+                    const diagnosticContent = document.getElementById('diagnostic-content');
+                    
+                    if (diagnosticModal && diagnosticContent) {
+                        // 收集診斷資訊
+                        let info = '--- 系統診斷報告 ---\n';
+                        info += `時間: ${new Date().toISOString()}\n\n`;
+                        
+                        // 認證資訊
+                        info += '認證狀態:\n';
+                        info += `已認證: ${typeof isUserAuthenticated === 'function' ? isUserAuthenticated() : '無法確定'}\n`;
+                        info += `Token 類型: ${localStorage.getItem('github_token') === window.DEFAULT_TOKEN ? '預設令牌' : '自訂令牌'}\n\n`;
+                        
+                        // 儲存庫資訊
+                        info += '儲存庫設定:\n';
+                        info += `使用者名稱: ${window.GITHUB_USERNAME || '未設定'}\n`;
+                        info += `儲存庫名稱: ${window.GITHUB_REPO || '未設定'}\n`;
+                        info += `資料目錄: ${window.DATA_PATH || 'data'}\n\n`;
+                        
+                        // 快取狀態
+                        info += '快取狀態:\n';
+                        const cacheStatus = {
+                            topics: window.dataCache?.topics?.data ? `已快取 (${window.dataCache.topics.data.length} 筆)` : '未快取',
+                            questionnaires: window.dataCache?.questionnaires?.data ? `已快取 (${window.dataCache.questionnaires.data.length} 筆)` : '未快取',
+                            results: window.dataCache?.results?.data ? `已快取 (${window.dataCache.results.data.length} 筆)` : '未快取',
+                            emails: window.dataCache?.emails?.data ? `已快取 (${window.dataCache.emails.data.length} 筆)` : '未快取'
+                        };
+                        
+                        info += `主題: ${cacheStatus.topics}\n`;
+                        info += `問卷: ${cacheStatus.questionnaires}\n`;
+                        info += `結果: ${cacheStatus.results}\n`;
+                        info += `Email: ${cacheStatus.emails}\n\n`;
+                        
+                        // 瀏覽器資訊
+                        info += '瀏覽器資訊:\n';
+                        info += `使用者代理: ${navigator.userAgent}\n`;
+                        info += `語言: ${navigator.language}\n`;
+                        info += `螢幕尺寸: ${window.screen.width}x${window.screen.height}\n`;
+                        info += `視窗尺寸: ${window.innerWidth}x${window.innerHeight}\n\n`;
+                        
+                        // 顯示診斷資訊
+                        diagnosticContent.textContent = info;
+                        diagnosticModal.style.display = 'block';
+                        
+                        // 關閉按鈕事件
+                        const closeBtn = diagnosticModal.querySelector('.close');
+                        const closeButton = document.getElementById('close-diagnostic');
+                        
+                        if (closeBtn) {
+                            closeBtn.onclick = function() {
+                                diagnosticModal.style.display = 'none';
+                            };
+                        }
+                        
+                        if (closeButton) {
+                            closeButton.onclick = function() {
+                                diagnosticModal.style.display = 'none';
+                            };
+                        }
+                        
+                        // 點擊模態框外部關閉
+                        window.onclick = function(event) {
+                            if (event.target === diagnosticModal) {
+                                diagnosticModal.style.display = 'none';
+                            }
+                        };
+                    }
+                });
+            }
+            
+            // 添加詳細連接狀態檢查功能
+            const checkConnectionDetailsBtn = document.getElementById('check-connection-details');
+            if (checkConnectionDetailsBtn) {
+                checkConnectionDetailsBtn.addEventListener('click', async function() {
+                    // 獲取診斷模態框
+                    const diagnosticModal = document.getElementById('diagnostic-modal');
+                    const diagnosticContent = document.getElementById('diagnostic-content');
+                    
+                    if (diagnosticModal && diagnosticContent) {
+                        // 顯示載入中
+                        diagnosticContent.textContent = '正在檢查連接狀態，請稍候...';
+                        diagnosticModal.style.display = 'block';
+                        
+                        try {
+                            // 檢查連接狀態
+                            const connectionCheck = await window.checkGitHubConnection();
+                            
+                            // 檢查儲存庫結構
+                            const structureCheck = await window.checkRepositoryStructure();
+                            
+                            // 顯示結果
+                            let info = '--- GitHub 連接狀態報告 ---\n';
+                            info += `時間: ${new Date().toISOString()}\n\n`;
+                            
+                            // 連接狀態
+                            info += '連接狀態:\n';
+                            info += `連接: ${connectionCheck.connected ? '成功' : '失敗'}\n`;
+                            
+                            if (connectionCheck.connected) {
+                                info += `儲存庫: ${connectionCheck.repoName || '未知'}\n`;
+                                info += `URL: ${connectionCheck.repoUrl || '未知'}\n\n`;
+                            } else {
+                                info += `錯誤: ${connectionCheck.error || '未知錯誤'}\n\n`;
+                            }
+                            
+                            // 儲存庫結構
+                            info += '儲存庫結構:\n';
+                            info += `初始化: ${structureCheck.initialized ? '是' : '否'}\n`;
+                            
+                            if (!structureCheck.initialized) {
+                                info += `錯誤: ${structureCheck.error || '未知錯誤'}\n`;
+                                
+                                if (structureCheck.missingFiles) {
+                                    info += `缺少檔案: ${structureCheck.missingFiles.join(', ')}\n`;
+                                }
+                                
+                                if (structureCheck.needsInitialization) {
+                                    info += '需要初始化: 是\n';
+                                }
+                            }
+                            
+                            // 顯示診斷資訊
+                            diagnosticContent.textContent = info;
+                        } catch (error) {
+                            diagnosticContent.textContent = `檢查連接狀態時發生錯誤:\n${error.message}`;
+                        }
+                    }
+                });
+            }
+        });
+        
+        // 添加全局錯誤處理
+        window.addEventListener('error', function(event) {
+            console.error('全局錯誤:', event.message, event.filename, event.lineno);
+            
+            // 顯示友好錯誤訊息
+            const systemMessages = document.getElementById('system-messages');
+            if (systemMessages) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'error-message';
+                errorMsg.innerHTML = `
+                    <strong>發生錯誤:</strong> 
+                    系統運行時遇到問題。如果問題持續存在，請聯繫管理員。
+                    <button onclick="this.parentNode.remove();" class="close-message">關閉</button>
+                `;
+                systemMessages.appendChild(errorMsg);
+            }
+        });
+    </script>
 </body>
 </html>
