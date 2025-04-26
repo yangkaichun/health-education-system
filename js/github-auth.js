@@ -10,27 +10,14 @@ const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
 //const API_SERVER_URL = 'http://localhost:3001'; 
 // 預設的 GitHub Token - 直接內建在代碼中
 //const DEFAULT_TOKEN = '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';
-const DEFAULT_TOKEN = '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';
-//const DEFAULT_TOKEN = process.env.GITHUB_TOKEN
-//const DEFAULT_TOKEN = process.env.GITHUB_TOKEN
-//async function fetchGitHubContents() {
- // try {
-  //  const response = await fetch(`${API_SERVER_URL}/github/contents`);
-  //  const data = await response.json();
-   
-  //  const DEFAULT_TOKEN =await response.json();
-    
-  //  console.log('GitHub contents:', data);
-    // 處理資料
- // } catch (error) {
- //   console.error('Error fetching GitHub contents:', error);
- // }
-//}
+// @charset "UTF-8";
+// GitHub 認證相關功能 - 自動認證版本
 
-//fetchGitHubContents();
+// 全域變數
 
 
-
+// 預設的 GitHub Token - 直接內建在代碼中
+const DEFAULT_TOKEN = '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';
 
 // 頁面載入時初始化認證
 document.addEventListener('DOMContentLoaded', initializeAuth);
