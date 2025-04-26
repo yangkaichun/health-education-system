@@ -14,14 +14,14 @@ const API_SERVER_URL = 'http://localhost:3001';
 //const DEFAULT_TOKEN = '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';
 const DEFAULT_TOKEN = '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';
 //const DEFAULT_TOKEN = process.env.GITHUB_TOKEN
-async function fetchGitHubContents() {
-  try {
-    const response = await fetch(`${API_SERVER_URL}/github/contents`);
-    const data = await response.json();
+//async function fetchGitHubContents() {
+ // try {
+  //  const response = await fetch(`${API_SERVER_URL}/github/contents`);
+  //  const data = await response.json();
    
   //  const DEFAULT_TOKEN =await response.json();
     
-    console.log('GitHub contents:', data);
+  //  console.log('GitHub contents:', data);
     // 處理資料
   } catch (error) {
     console.error('Error fetching GitHub contents:', error);
