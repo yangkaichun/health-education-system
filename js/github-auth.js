@@ -9,14 +9,13 @@ const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
 // 預設的 GitHub Token - 直接內建在代碼中
 const DEFAULT_TOKEN = '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';
 
-// 確保字符串使用相同的編碼
-document.addEventListener('DOMContentLoaded', function() {
-    // 確保編碼一致性
-    document.querySelector('meta[charset]').setAttribute('charset', 'UTF-8');
+// 頁面載入時初始化認證
+document.addEventListener('DOMContentLoaded', initializeAuth);
+
+// 初始化認證
+function initializeAuth() {
+    console.log('Initializing GitHub authentication...');
     
-    // 初始化認證
-    initializeAuth();
-});
     // 設置認證相關事件監聽
     setupAuthListeners();
     
@@ -480,6 +479,25 @@ async function testToken() {
     }
 }
 
+// 添加調試功能
+function debugAuthentication() {
+    console.group('GitHub 認證調試信息');
+    console.log('使用的 Token:', getStoredToken() ? '已設置 (隱藏)' : '未設置');
+    console.log('認證狀態:', isUserAuthenticated() ? '已認證' : '未認證');
+    console.log('Token 來源:', getStoredToken() === DEFAULT_TOKEN ? '預設 Token' : '用戶提供的 Token');
+    console.log('GITHUB_USERNAME:', GITHUB_USERNAME);
+    console.log('GITHUB_REPO:', GITHUB_REPO);
+    console.groupEnd();
+    
+    // 測試認證
+    testToken().then(valid => {
+        console.log('Token 測試結果:', valid ? '有效' : '無效');
+        if (!valid) {
+            console.warn('警告: 預設 Token 無效，請更新');
+        }
+    });
+}
+
 // 在頁面載入時測試
 document.addEventListener('DOMContentLoaded', function() {
     testToken().then(valid => {
@@ -488,10 +506,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-// 在 github-auth.js 的底部添加
-// 確保這些變量全局可用
+
+// 確保全局可訪問性
 window.GITHUB_USERNAME = GITHUB_USERNAME;
 window.GITHUB_REPO = GITHUB_REPO;
-window.getStoredToken = getStoredToken;
+window.DEFAULT_TOKEN = DEFAULT_TOKEN;
 window.isUserAuthenticated = isUserAuthenticated;
+window.getStoredToken = getStoredToken;
 window.showNotification = showNotification;
+window.checkGitHubConnection = checkGitHubConnection;
+window.debugAuthentication = debugAuthentication;
