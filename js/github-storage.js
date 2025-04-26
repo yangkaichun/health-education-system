@@ -22,9 +22,19 @@ let dataCache = {
 
 // 初始化 GitHub 儲存
 async function initializeGitHubStorage() {
-    // 檢查檔案是否存在，不做實際操作
-    console.log('GitHub storage initialized');
-    return true;
+    try {
+        // 檢查所有必要的檔案是否存在，如果不存在會創建默認數據
+        await readGitHubFile(TOPICS_FILE);
+        await readGitHubFile(QUESTIONNAIRES_FILE);
+        await readGitHubFile(RESULTS_FILE);
+        await readGitHubFile(EMAILS_FILE);
+        
+        console.log('GitHub storage initialized successfully');
+        return true;
+    } catch (error) {
+        console.error('初始化 GitHub 儲存時發生錯誤:', error);
+        return false;
+    }
 }
 
 // 從 GitHub 讀取檔案
@@ -52,12 +62,42 @@ async function readGitHubFile(filename) {
         });
         
         if (!response.ok) {
+            // 如果檔案不存在，返回初始資料並嘗試創建檔案
+            if (response.status === 404) {
+                console.log(`檔案 ${filename} 不存在，將創建並返回初始資料`);
+                const defaultData = initializeDefaultData(filename);
+                
+                // 嘗試創建檔案
+                if (token) {
+                    try {
+                        await updateGitHubFile(filename, defaultData);
+                    } catch (createError) {
+                        console.warn(`無法創建檔案 ${filename}:`, createError);
+                    }
+                }
+                
+                return defaultData;
+            }
+            
             throw new Error(`GitHub API 回應錯誤: ${response.status}`);
         }
         
         const fileData = await response.json();
-        const content = atob(fileData.content); // Base64 解碼
-        const data = JSON.parse(content);
+        let content;
+        try {
+            content = atob(fileData.content); // Base64 解碼
+        } catch (error) {
+            console.error('Base64 解碼失敗:', error);
+            content = '[]'; // 使用空陣列作為備用
+        }
+        
+        let data;
+        try {
+            data = JSON.parse(content);
+        } catch (error) {
+            console.error('JSON 解析失敗:', error);
+            data = initializeDefaultData(filename);
+        }
         
         // 更新緩存
         dataCache[cacheKey] = {
@@ -69,26 +109,7 @@ async function readGitHubFile(filename) {
         return data;
     } catch (error) {
         console.error(`讀取 GitHub 檔案 ${filename} 時發生錯誤:`, error);
-        
-        // 如果檔案不存在或無法讀取，返回預設資料
-        let defaultData;
-        
-        if (filename === TOPICS_FILE) {
-            defaultData = Array.from({ length: 30 }, (_, i) => ({
-                id: i + 1,
-                name: `衛教主題 ${i + 1}`,
-                youtubeUrl: ''
-            }));
-        } else if (filename === QUESTIONNAIRES_FILE) {
-            defaultData = Array.from({ length: 30 }, (_, i) => ({
-                topicId: i + 1,
-                questions: []
-            }));
-        } else {
-            defaultData = [];
-        }
-        
-        return defaultData;
+        return initializeDefaultData(filename);
     }
 }
 
@@ -123,13 +144,13 @@ async function updateGitHubFile(filename, data) {
                     sha = fileData.sha;
                 }
             } catch (error) {
-                console.log('File may not exist yet:', error);
+                console.log('檔案可能不存在，將創建新檔案:', error);
             }
         }
         
         // 準備更新或創建檔案的請求參數
         const requestBody = {
-            message: `更新 ${filename}`,
+            message: `更新 ${filename} - ${new Date().toISOString()}`,
             content: contentEncoded,
         };
         
@@ -150,7 +171,8 @@ async function updateGitHubFile(filename, data) {
         
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(`GitHub API 更新錯誤: ${response.status} - ${JSON.stringify(errorData)}`);
+            console.error('GitHub API 更新錯誤詳情:', errorData);
+            throw new Error(`GitHub API 更新錯誤: ${response.status} - ${errorData.message || '未知錯誤'}`);
         }
         
         const responseData = await response.json();
@@ -165,74 +187,291 @@ async function updateGitHubFile(filename, data) {
         return true;
     } catch (error) {
         console.error(`更新 GitHub 檔案 ${filename} 時發生錯誤:`, error);
-        return false;
+        throw error; // 將錯誤傳播出去，以便調用者能夠處理
+    }
+}
+
+// 為不同檔案產生預設資料
+function initializeDefaultData(filename) {
+    switch(filename) {
+        case TOPICS_FILE:
+            return Array.from({ length: 30 }, (_, i) => ({
+                id: i + 1,
+                name: `衛教主題 ${i + 1}`,
+                youtubeUrl: ''
+            }));
+        case QUESTIONNAIRES_FILE:
+            return Array.from({ length: 30 }, (_, i) => ({
+                topicId: i + 1,
+                questions: []
+            }));
+        case RESULTS_FILE:
+            return [];
+        case EMAILS_FILE:
+            return [];
+        default:
+            return [];
     }
 }
 
 // API 函數
 async function getAllTopics() {
-    return await readGitHubFile(TOPICS_FILE);
+    try {
+        const topics = await readGitHubFile(TOPICS_FILE);
+        return Array.isArray(topics) ? topics : initializeDefaultData(TOPICS_FILE);
+    } catch (error) {
+        console.error('獲取所有主題時發生錯誤:', error);
+        return initializeDefaultData(TOPICS_FILE);
+    }
 }
 
 async function updateTopics(topics) {
-    return await updateGitHubFile(TOPICS_FILE, topics);
+    try {
+        // 確保資料有效
+        if (!Array.isArray(topics)) {
+            throw new Error('主題資料必須是陣列');
+        }
+        
+        // 確保每個主題都有必要的屬性
+        const validatedTopics = topics.map(topic => ({
+            id: topic.id,
+            name: topic.name || `衛教主題 ${topic.id}`,
+            youtubeUrl: topic.youtubeUrl || ''
+        }));
+        
+        return await updateGitHubFile(TOPICS_FILE, validatedTopics);
+    } catch (error) {
+        console.error('更新主題時發生錯誤:', error);
+        throw error;
+    }
 }
 
 async function getQuestionnaire(topicId) {
-    const questionnaires = await readGitHubFile(QUESTIONNAIRES_FILE);
-    return questionnaires.find(q => q.topicId === topicId) || { topicId, questions: [] };
+    try {
+        const questionnaires = await readGitHubFile(QUESTIONNAIRES_FILE);
+        
+        if (!Array.isArray(questionnaires)) {
+            return { topicId, questions: [] };
+        }
+        
+        // 找出對應的問卷
+        const questionnaire = questionnaires.find(q => q.topicId === topicId);
+        
+        if (questionnaire) {
+            // 確保問卷有 questions 陣列
+            if (!questionnaire.questions) {
+                questionnaire.questions = [];
+            }
+            return questionnaire;
+        }
+        
+        // 未找到對應問卷，返回新的問卷物件
+        return { topicId, questions: [] };
+    } catch (error) {
+        console.error(`獲取問卷 (topicId: ${topicId}) 時發生錯誤:`, error);
+        return { topicId, questions: [] };
+    }
 }
 
 async function updateQuestionnaire(questionnaire) {
-    const questionnaires = await readGitHubFile(QUESTIONNAIRES_FILE);
-    const index = questionnaires.findIndex(q => q.topicId === questionnaire.topicId);
-    
-    if (index !== -1) {
-        questionnaires[index] = questionnaire;
-    } else {
-        questionnaires.push(questionnaire);
+    try {
+        // 驗證問卷資料
+        if (!questionnaire || typeof questionnaire !== 'object') {
+            throw new Error('問卷資料無效');
+        }
+        
+        if (!questionnaire.topicId) {
+            throw new Error('問卷缺少 topicId');
+        }
+        
+        // 確保問卷有 questions 陣列
+        if (!questionnaire.questions) {
+            questionnaire.questions = [];
+        }
+        
+        // 讀取所有問卷
+        const questionnaires = await readGitHubFile(QUESTIONNAIRES_FILE);
+        
+        if (!Array.isArray(questionnaires)) {
+            throw new Error('問卷資料格式無效');
+        }
+        
+        // 尋找對應的問卷
+        const index = questionnaires.findIndex(q => q.topicId === questionnaire.topicId);
+        
+        if (index !== -1) {
+            // 更新現有問卷
+            questionnaires[index] = questionnaire;
+        } else {
+            // 新增問卷
+            questionnaires.push(questionnaire);
+        }
+        
+        // 保存到 GitHub
+        return await updateGitHubFile(QUESTIONNAIRES_FILE, questionnaires);
+    } catch (error) {
+        console.error('更新問卷時發生錯誤:', error);
+        throw error;
     }
-    
-    return await updateGitHubFile(QUESTIONNAIRES_FILE, questionnaires);
 }
 
 async function getAllResults() {
-    return await readGitHubFile(RESULTS_FILE);
+    try {
+        const results = await readGitHubFile(RESULTS_FILE);
+        return Array.isArray(results) ? results : [];
+    } catch (error) {
+        console.error('獲取所有結果時發生錯誤:', error);
+        return [];
+    }
 }
 
 async function addResult(result) {
-    const results = await readGitHubFile(RESULTS_FILE);
-    results.push(result);
-    return await updateGitHubFile(RESULTS_FILE, results);
+    try {
+        // 驗證結果資料
+        if (!result || typeof result !== 'object') {
+            throw new Error('結果資料無效');
+        }
+        
+        if (!result.id) {
+            result.id = Date.now().toString(); // 使用時間戳作為 ID
+        }
+        
+        // 讀取所有結果
+        const results = await readGitHubFile(RESULTS_FILE);
+        
+        if (!Array.isArray(results)) {
+            throw new Error('結果資料格式無效');
+        }
+        
+        // 新增結果
+        results.push(result);
+        
+        // 保存到 GitHub
+        return await updateGitHubFile(RESULTS_FILE, results);
+    } catch (error) {
+        console.error('新增結果時發生錯誤:', error);
+        throw error;
+    }
 }
 
 async function deleteResult(resultId) {
-    let results = await readGitHubFile(RESULTS_FILE);
-    results = results.filter(r => r.id !== resultId);
-    return await updateGitHubFile(RESULTS_FILE, results);
+    try {
+        if (!resultId) {
+            throw new Error('結果 ID 無效');
+        }
+        
+        // 讀取所有結果
+        const results = await readGitHubFile(RESULTS_FILE);
+        
+        if (!Array.isArray(results)) {
+            throw new Error('結果資料格式無效');
+        }
+        
+        // 過濾掉要刪除的結果
+        const filteredResults = results.filter(r => r.id !== resultId);
+        
+        // 檢查是否有結果被刪除
+        if (filteredResults.length === results.length) {
+            console.warn(`未找到結果 ID: ${resultId}`);
+        }
+        
+        // 保存到 GitHub
+        return await updateGitHubFile(RESULTS_FILE, filteredResults);
+    } catch (error) {
+        console.error('刪除結果時發生錯誤:', error);
+        throw error;
+    }
 }
 
 async function updateNurseAcknowledged(resultId, acknowledged) {
-    const results = await readGitHubFile(RESULTS_FILE);
-    const index = results.findIndex(r => r.id === resultId);
-    
-    if (index !== -1) {
+    try {
+        if (!resultId) {
+            throw new Error('結果 ID 無效');
+        }
+        
+        // 讀取所有結果
+        const results = await readGitHubFile(RESULTS_FILE);
+        
+        if (!Array.isArray(results)) {
+            throw new Error('結果資料格式無效');
+        }
+        
+        // 尋找對應的結果
+        const index = results.findIndex(r => r.id === resultId);
+        
+        if (index === -1) {
+            throw new Error(`未找到結果 ID: ${resultId}`);
+        }
+        
+        // 更新護理師確認狀態
         results[index].nurseAcknowledged = acknowledged;
+        
+        // 保存到 GitHub
         return await updateGitHubFile(RESULTS_FILE, results);
+    } catch (error) {
+        console.error('更新護理師確認狀態時發生錯誤:', error);
+        throw error;
     }
-    
-    return false;
 }
 
 async function getEmailList() {
-    return await readGitHubFile(EMAILS_FILE);
+    try {
+        const emails = await readGitHubFile(EMAILS_FILE);
+        return Array.isArray(emails) ? emails : [];
+    } catch (error) {
+        console.error('獲取 Email 列表時發生錯誤:', error);
+        return [];
+    }
 }
 
 async function updateEmailList(emails) {
-    return await updateGitHubFile(EMAILS_FILE, emails);
+    try {
+        // 驗證 Email 列表
+        if (!Array.isArray(emails)) {
+            throw new Error('Email 列表必須是陣列');
+        }
+        
+        // 確保每個 Email 物件都有必要的屬性
+        const validatedEmails = emails.map(email => ({
+            email: email.email,
+            enabled: email.enabled !== undefined ? email.enabled : true
+        }));
+        
+        // 保存到 GitHub
+        return await updateGitHubFile(EMAILS_FILE, validatedEmails);
+    } catch (error) {
+        console.error('更新 Email 列表時發生錯誤:', error);
+        throw error;
+    }
 }
 
-// 備份數據功能 (可選)
+// 傳送通知 Email
+async function sendNotificationEmail(result) {
+    try {
+        // 由於 GitHub Pages 無法發送實際的 Email，這裡只是模擬操作
+        console.log(`[模擬] 發送通知郵件：有關主題 ${result.topicId} 的新問卷結果`);
+        
+        // 獲取 Email 列表
+        const emails = await getEmailList();
+        const enabledEmails = emails.filter(email => email.enabled);
+        
+        if (enabledEmails.length > 0) {
+            console.log(`[模擬] 通知將發送至: ${enabledEmails.map(e => e.email).join(', ')}`);
+        } else {
+            console.log('[模擬] 沒有啟用的 Email 地址可以通知');
+        }
+        
+        // 在實際應用中，這裡應該使用 Email 服務 API 發送郵件
+        // 例如：SendGrid, Mailgun, AWS SES 等
+        
+        return true;
+    } catch (error) {
+        console.error('發送通知郵件時發生錯誤:', error);
+        return false;
+    }
+}
+
+// 備份數據功能
 function exportAllData() {
     Promise.all([
         readGitHubFile(TOPICS_FILE),
@@ -245,7 +484,8 @@ function exportAllData() {
             topics,
             questionnaires,
             results,
-            emails
+            emails,
+            exportDate: new Date().toISOString()
         };
         
         const dataStr = JSON.stringify(allData, null, 2);
@@ -258,56 +498,106 @@ function exportAllData() {
         linkElement.click();
     })
     .catch(error => {
-        console.error('導出數據時發生錯誤:', error);
-        alert('導出數據時發生錯誤');
+        console.error('匯出數據時發生錯誤:', error);
+        alert('匯出數據時發生錯誤: ' + error.message);
     });
 }
 
-// 匯入數據功能 (可選)
+// 匯入數據功能
 async function importAllData(jsonData) {
     try {
-        const data = JSON.parse(jsonData);
+        let data;
+        try {
+            data = JSON.parse(jsonData);
+        } catch (error) {
+            throw new Error('JSON 解析失敗: ' + error.message);
+        }
         
         const promises = [];
+        let importSummary = [];
         
-        if (data.topics) {
+        if (data.topics && Array.isArray(data.topics)) {
             promises.push(updateGitHubFile(TOPICS_FILE, data.topics));
+            importSummary.push(`主題: ${data.topics.length} 筆`);
         }
         
-        if (data.questionnaires) {
+        if (data.questionnaires && Array.isArray(data.questionnaires)) {
             promises.push(updateGitHubFile(QUESTIONNAIRES_FILE, data.questionnaires));
+            importSummary.push(`問卷: ${data.questionnaires.length} 筆`);
         }
         
-        if (data.results) {
+        if (data.results && Array.isArray(data.results)) {
             promises.push(updateGitHubFile(RESULTS_FILE, data.results));
+            importSummary.push(`結果: ${data.results.length} 筆`);
         }
         
-        if (data.emails) {
+        if (data.emails && Array.isArray(data.emails)) {
             promises.push(updateGitHubFile(EMAILS_FILE, data.emails));
+            importSummary.push(`Email: ${data.emails.length} 筆`);
+        }
+        
+        if (promises.length === 0) {
+            throw new Error('找不到有效的資料');
         }
         
         await Promise.all(promises);
+        console.log('成功匯入: ' + importSummary.join(', '));
+        
+        // 清除緩存
+        dataCache = {
+            topics: { data: null, timestamp: 0 },
+            questionnaires: { data: null, timestamp: 0 },
+            results: { data: null, timestamp: 0 },
+            emails: { data: null, timestamp: 0 }
+        };
+        
         return true;
     } catch (error) {
         console.error('匯入數據時發生錯誤:', error);
-        return false;
+        throw error;
     }
 }
 
-// 傳送通知 Email (模擬功能)
-async function sendNotificationEmail(result) {
-    // 由於 GitHub Pages 無法發送 Email，這裡只進行模擬
-    console.log(`模擬發送通知郵件：有關主題 ${result.topicId} 的新問卷結果`);
-    
-    // 獲取 Email 列表
-    const emails = await getEmailList();
-    const enabledEmails = emails.filter(email => email.enabled);
-    
-    if (enabledEmails.length > 0) {
-        console.log(`通知將發送至: ${enabledEmails.map(e => e.email).join(', ')}`);
-    } else {
-        console.log('沒有啟用的 Email 地址可以通知');
+// 檢查 GitHub 連接狀態
+async function checkGitHubConnection() {
+    try {
+        const token = localStorage.getItem('github_token');
+        const headers = token ? { 'Authorization': `token ${token}` } : {};
+        
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}`, {
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                ...headers
+            }
+        });
+        
+        if (response.ok) {
+            const repoData = await response.json();
+            console.log(`成功連接到 GitHub 倉庫: ${repoData.full_name}`);
+            return {
+                connected: true,
+                repoName: repoData.full_name,
+                repoUrl: repoData.html_url
+            };
+        } else {
+            throw new Error(`GitHub API 回應錯誤: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('檢查 GitHub 連接時發生錯誤:', error);
+        return {
+            connected: false,
+            error: error.message
+        };
     }
-    
-    return true;
+}
+
+// 同步本地緩存
+function invalidateCache() {
+    dataCache = {
+        topics: { data: null, timestamp: 0 },
+        questionnaires: { data: null, timestamp: 0 },
+        results: { data: null, timestamp: 0 },
+        emails: { data: null, timestamp: 0 }
+    };
+    console.log('本地緩存已清除');
 }

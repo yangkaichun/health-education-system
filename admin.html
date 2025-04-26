@@ -94,15 +94,17 @@
     <script src="js/github-storage.js"></script>
     <script src="js/admin.js"></script>
     <!-- 在管理設定區域添加 -->
-<section id="data-management">
-    <h2>資料管理</h2>
-    <div class="data-actions">
-        <button id="export-data">匯出所有資料</button>
-        <div class="import-container">
-            <input type="file" id="import-file" accept=".json" style="display: none;">
-            <button id="import-data">匯入資料</button>
+    <section id="data-management">
+        <h2>資料管理</h2>
+        <div class="data-actions">
+            <button id="export-data">匯出所有資料</button>
+            <div class="import-container">
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+                <button id="import-data">匯入資料</button>
+            </div>
         </div>
-    </div>
+        <p class="data-info">匯出功能可將目前系統中的所有設定和資料備份為 JSON 檔案。匯入功能可從備份檔案還原所有設定和資料。</p>
+    </section>
 </section>
 </body>
 </html>
