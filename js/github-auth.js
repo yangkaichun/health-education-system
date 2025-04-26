@@ -9,7 +9,7 @@ const API_SERVER_URL = 'https://yangkaichun.github.io/health-education-system/';
 // 預設的 GitHub Token - 直接內建在代碼中
 //const DEFAULT_TOKEN = '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';
 //const DEFAULT_TOKEN = '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';
-
+const DEFAULT_TOKEN = process.env.GITHUB_TOKEN;
 async function fetchGitHubContents() {
   try {
     const response = await fetch(`${API_SERVER_URL}/github/contents`);
