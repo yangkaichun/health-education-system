@@ -1,39 +1,56 @@
-// GitHub 認證相關功能
+// GitHub 認證相關功能 - 自動認證版本
 
 // 全域變數
-let isAuthenticated = true;
-const GITHUB_TOKEN_KEY = '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';
-const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
-const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
+let isAuthenticated = false;
+const GITHUB_TOKEN_KEY = 'github_token';
+const GITHUB_USERNAME = 'YOUR_GITHUB_USERNAME'; // 替換為您的 GitHub 用戶名
+const GITHUB_REPO = 'healthcare-education'; // 替換為您的倉庫名稱
+
+// 預設的 GitHub Token - 直接內建在代碼中
+const DEFAULT_TOKEN = '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';
 
 // 頁面載入時初始化認證
 document.addEventListener('DOMContentLoaded', initializeAuth);
 
 // 初始化認證
 function initializeAuth() {
+    console.log('Initializing GitHub authentication...');
+    
     // 設置認證相關事件監聽
     setupAuthListeners();
     
-    // 檢查是否已有 Token
-    const token = localStorage.getItem(GITHUB_TOKEN_KEY);
+    // 檢查是否已有儲存的 Token，如果沒有則使用預設 Token
+    let token = localStorage.getItem(GITHUB_TOKEN_KEY);
     
-    if (token) {
-        // 驗證 Token 是否有效
-        validateToken(token)
-            .then(valid => {
-                if (valid) {
-                    completeAuthentication(token);
-                } else {
-                    showAuthForm();
-                }
-            })
-            .catch(error => {
-                console.error('Token 驗證失敗:', error);
-                showAuthForm();
-            });
-    } else {
-        showAuthForm();
+    if (!token) {
+        console.log('No token found, using default token');
+        // 使用預設 Token
+        token = DEFAULT_TOKEN;
+        localStorage.setItem(GITHUB_TOKEN_KEY, token);
     }
+    
+    // 驗證 Token 是否有效
+    validateToken(token)
+        .then(valid => {
+            if (valid) {
+                // Token 有效，完成認證
+                console.log('Token is valid, completing authentication');
+                completeAuthentication(token);
+            } else {
+                // 如果是預設 Token 且無效，表示可能需要更新
+                if (token === DEFAULT_TOKEN) {
+                    console.error('Default token is invalid, update required');
+                    showError('預設的 GitHub Token 已失效，請聯繫系統管理員更新。');
+                }
+                // 顯示認證表單
+                console.log('Token is invalid, showing auth form');
+                showAuthForm();
+            }
+        })
+        .catch(error => {
+            console.error('Token validation failed:', error);
+            showAuthForm();
+        });
 }
 
 // 設置認證相關事件監聽
@@ -100,6 +117,7 @@ async function handleAuthentication() {
 // 驗證 Token
 async function validateToken(token) {
     try {
+        console.log('Validating token...');
         // 檢查對儲存庫的訪問權限
         const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}`, {
             headers: {
@@ -107,9 +125,15 @@ async function validateToken(token) {
             }
         });
         
-        return response.status === 200;
+        if (response.status === 200) {
+            console.log('Token is valid');
+            return true;
+        } else {
+            console.error('Token validation failed, status:', response.status);
+            return false;
+        }
     } catch (error) {
-        console.error('Token 驗證錯誤:', error);
+        console.error('Token validation error:', error);
         return false;
     }
 }
@@ -120,16 +144,25 @@ function completeAuthentication(token) {
     localStorage.setItem(GITHUB_TOKEN_KEY, token);
     isAuthenticated = true;
     
-    // 隱藏認證表單，顯示管理界面
+    // 隱藏認證表單 (如果存在)
     hideAuthForm();
-    showGitHubStatus(true);
+    
+    // 在管理頁面顯示狀態 (如果存在)
+    const githubStatus = document.getElementById('github-status');
+    if (githubStatus) {
+        githubStatus.style.display = 'block';
+        showConnectionStatus('已連接', 'success');
+    }
     
     // 顯示成功訊息
     showNotification('GitHub 認證成功', 'success');
     
     // 初始化系統資料
     if (typeof onAuthenticated === 'function') {
+        console.log('Calling onAuthenticated function');
         onAuthenticated();
+    } else {
+        console.warn('onAuthenticated function not defined');
     }
 }
 
@@ -156,12 +189,17 @@ function handleLogout() {
 // 檢查 GitHub 連接狀態
 async function checkGitHubConnection() {
     try {
-        showConnectionStatus('檢查中...', 'loading');
+        const connectionStatusEl = document.getElementById('connection-status');
+        if (connectionStatusEl) {
+            showConnectionStatus('檢查中...', 'loading');
+        }
         
-        const token = localStorage.getItem(GITHUB_TOKEN_KEY);
+        const token = localStorage.getItem(GITHUB_TOKEN_KEY) || DEFAULT_TOKEN;
         
         if (!token) {
-            showConnectionStatus('未認證', 'error');
+            if (connectionStatusEl) {
+                showConnectionStatus('未認證', 'error');
+            }
             return { connected: false, error: '尚未提供 GitHub Token' };
         }
         
@@ -174,7 +212,10 @@ async function checkGitHubConnection() {
         
         if (response.ok) {
             const repoData = await response.json();
-            showConnectionStatus('已連接', 'success');
+            if (connectionStatusEl) {
+                showConnectionStatus('已連接', 'success');
+            }
+            console.log('Connected to repository:', repoData.full_name);
             return {
                 connected: true,
                 repoName: repoData.full_name,
@@ -182,15 +223,21 @@ async function checkGitHubConnection() {
             };
         } else {
             const errorData = await response.json();
-            showConnectionStatus('連接失敗', 'error');
+            if (connectionStatusEl) {
+                showConnectionStatus('連接失敗', 'error');
+            }
+            console.error('Connection failed:', errorData);
             return {
                 connected: false,
                 error: `GitHub API 錯誤: ${response.status} - ${errorData.message}`
             };
         }
     } catch (error) {
-        console.error('檢查 GitHub 連接時發生錯誤:', error);
-        showConnectionStatus('連接錯誤', 'error');
+        console.error('Error checking GitHub connection:', error);
+        const connectionStatusEl = document.getElementById('connection-status');
+        if (connectionStatusEl) {
+            showConnectionStatus('連接錯誤', 'error');
+        }
         return {
             connected: false,
             error: error.message
@@ -233,50 +280,71 @@ function showConnectionStatus(message, status) {
     }
 }
 
-// 顯示 GitHub 狀態區塊
-function showGitHubStatus(isConnected) {
-    const statusSection = document.getElementById('github-status');
-    if (statusSection) {
-        statusSection.style.display = 'block';
-        
-        if (isConnected) {
-            showConnectionStatus('已連接', 'success');
-        } else {
-            showConnectionStatus('未連接', 'error');
-        }
-    }
-}
-
-// 顯示認證表單
+// 顯示認證表單 - 只在預設 Token 失效時才會顯示
 function showAuthForm() {
-    const authSection = document.getElementById('github-auth');
-    const contentSections = document.querySelectorAll('main > section:not(#github-auth):not(#github-status)');
-    const githubStatus = document.getElementById('github-status');
+    let authSection = document.getElementById('github-auth');
     
-    if (authSection) {
-        authSection.style.display = 'block';
+    // 如果認證區塊不存在，動態創建
+    if (!authSection) {
+        authSection = document.createElement('section');
+        authSection.id = 'github-auth';
+        authSection.innerHTML = `
+            <h2>GitHub 認證</h2>
+            <p>系統無法使用預設認證，請輸入您的 GitHub 個人訪問令牌</p>
+            <div class="auth-form">
+                <input type="text" id="github-token" placeholder="輸入 GitHub Token">
+                <button id="auth-button">登入</button>
+            </div>
+            <div class="auth-help">
+                <p>如何獲取 GitHub Token:</p>
+                <ol>
+                    <li>登入 <a href="https://github.com/" target="_blank">GitHub</a></li>
+                    <li>點擊右上角頭像 → Settings → Developer settings</li>
+                    <li>選擇 Personal access tokens → Tokens (classic)</li>
+                    <li>點擊 "Generate new token"，設置名稱並選擇 "repo" 權限</li>
+                    <li>生成並複製 Token 後粘貼到上方輸入框</li>
+                </ol>
+            </div>
+        `;
+        
+        // 添加到頁面頂部
+        const main = document.querySelector('main');
+        if (main) {
+            main.insertBefore(authSection, main.firstChild);
+        } else {
+            document.body.insertBefore(authSection, document.body.firstChild);
+        }
+        
+        // 重新綁定事件
+        setupAuthListeners();
     }
     
-    if (githubStatus) {
-        githubStatus.style.display = 'none';
-    }
+    // 顯示認證表單
+    authSection.style.display = 'block';
     
     // 隱藏內容區塊
+    const contentSections = document.querySelectorAll('main > section:not(#github-auth):not(#github-status)');
     contentSections.forEach(section => {
         section.style.display = 'none';
     });
+    
+    // 隱藏狀態區塊 (如果存在)
+    const githubStatus = document.getElementById('github-status');
+    if (githubStatus) {
+        githubStatus.style.display = 'none';
+    }
 }
 
 // 隱藏認證表單
 function hideAuthForm() {
     const authSection = document.getElementById('github-auth');
-    const contentSections = document.querySelectorAll('main > section:not(#github-auth)');
     
     if (authSection) {
         authSection.style.display = 'none';
     }
     
     // 顯示內容區塊
+    const contentSections = document.querySelectorAll('main > section:not(#github-auth)');
     contentSections.forEach(section => {
         section.style.display = 'block';
     });
@@ -306,6 +374,27 @@ function showAuthStatus(message, status) {
                 authButton.textContent = originalText;
                 authButton.disabled = false;
         }
+    }
+}
+
+// 顯示錯誤訊息
+function showError(message) {
+    // 創建錯誤訊息容器
+    const errorContainer = document.createElement('div');
+    errorContainer.style.backgroundColor = '#f8d7da';
+    errorContainer.style.color = '#721c24';
+    errorContainer.style.padding = '1rem';
+    errorContainer.style.marginBottom = '1rem';
+    errorContainer.style.borderRadius = '0.25rem';
+    errorContainer.style.textAlign = 'center';
+    errorContainer.innerHTML = `<strong>錯誤:</strong> ${message}`;
+    
+    // 插入到頁面頂部
+    const main = document.querySelector('main');
+    if (main) {
+        main.insertBefore(errorContainer, main.firstChild);
+    } else {
+        document.body.insertBefore(errorContainer, document.body.firstChild);
     }
 }
 
@@ -359,10 +448,42 @@ function getNotificationIcon(type) {
 
 // 檢查是否已認證
 function isUserAuthenticated() {
-    return isAuthenticated;
+    return isAuthenticated || localStorage.getItem(GITHUB_TOKEN_KEY) !== null;
 }
 
 // 獲取存儲的 Token
 function getStoredToken() {
-    return localStorage.getItem(GITHUB_TOKEN_KEY);
+    return localStorage.getItem(GITHUB_TOKEN_KEY) || DEFAULT_TOKEN;
 }
+
+// 測試 Token
+async function testToken() {
+    try {
+        console.log('Testing default token...');
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}`, {
+            headers: {
+                'Authorization': `token ${DEFAULT_TOKEN}`
+            }
+        });
+        
+        if (response.ok) {
+            console.log('Default token is valid!');
+            return true;
+        } else {
+            console.error('Default token is invalid!', await response.json());
+            return false;
+        }
+    } catch (error) {
+        console.error('Error testing token:', error);
+        return false;
+    }
+}
+
+// 在頁面載入時測試
+document.addEventListener('DOMContentLoaded', function() {
+    testToken().then(valid => {
+        if (!valid) {
+            console.warn('請更新預設 Token！');
+        }
+    });
+});
