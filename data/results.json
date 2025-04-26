@@ -1,5 +1,27 @@
 [
   {
+    "id": "1745673075483",
+    "qrCode": "405",
+    "topicId": 2,
+    "topicName": "化學治療的簡介(APT)",
+    "status": "completed",
+    "score": 100,
+    "maxScore": 100,
+    "nurseAcknowledged": true,
+    "timestamp": "2025-04-26T13:11:15.483Z"
+  },
+  {
+    "id": "1745673060638",
+    "qrCode": "405",
+    "topicId": 2,
+    "topicName": "化學治療的簡介(APT)",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-26T13:11:00.638Z"
+  },
+  {
     "id": "1745672954211",
     "qrCode": "7011",
     "topicId": 1,
@@ -86,27 +108,5 @@
     "maxScore": 0,
     "nurseAcknowledged": false,
     "timestamp": "2025-04-26T12:49:59.007Z"
-  },
-  {
-    "id": "1745673060638",
-    "qrCode": "405",
-    "topicId": 2,
-    "topicName": "化學治療的簡介(APT)",
-    "status": "viewing",
-    "score": 0,
-    "maxScore": 0,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-26T13:11:00.638Z"
-  },
-  {
-    "id": "1745673075483",
-    "qrCode": "405",
-    "topicId": 2,
-    "topicName": "化學治療的簡介(APT)",
-    "status": "completed",
-    "score": 100,
-    "maxScore": 100,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-26T13:11:15.483Z"
   }
 ]
