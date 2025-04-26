@@ -20,26 +20,6 @@
     </header>
 
     <main>
-        <!-- GitHub 認證區塊 -->
-        <section id="github-auth" style="display: none;">
-            <h2>GitHub 認證</h2>
-            <p>請輸入您的 GitHub 個人訪問令牌（Personal Access Token）以管理系統資料</p>
-            <div class="auth-form">
-                <input type="text" id="github-token" placeholder="輸入 GitHub Token">
-                <button id="auth-button">登入</button>
-            </div>
-            <div class="auth-help">
-                <p>如何獲取 GitHub Token:</p>
-                <ol>
-                    <li>登入 <a href="https://github.com/" target="_blank">GitHub</a></li>
-                    <li>點擊右上角頭像 → Settings → Developer settings</li>
-                    <li>選擇 Personal access tokens → Tokens (classic)</li>
-                    <li>點擊 "Generate new token"，設置名稱並選擇 "repo" 權限</li>
-                    <li>生成並複製 Token 後粘貼到上方輸入框</li>
-                </ol>
-            </div>
-        </section>
-
         <!-- GitHub 連接狀態區塊 -->
         <section id="github-status">
             <div class="status-container">
@@ -49,7 +29,8 @@
                 </div>
                 <div class="status-actions">
                     <button id="check-connection">重新檢查連接</button>
-                    <button id="logout-github">登出</button>
+                    <!-- 登出按鈕已隱藏，因為使用預設 Token -->
+                    <button id="logout-github" style="display: none;">登出</button>
                 </div>
             </div>
         </section>
