@@ -3,98 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理頁面 - 衛教影片管理系統</title>
-    <link rel="stylesheet" href="css/main.css">
+    <title>管理設定</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/admin.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1><i class="fas fa-heartbeat"></i> 衛教影片管理系統</h1>
-            <nav>
-                <a href="index.html">首頁</a>
-                <a href="admin.html" class="active">管理頁面</a>
-                <a href="settings.html">後台設定</a>
-            </nav>
-        </div>
+        <h1>衛教影片觀看系統</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">影片觀看</a></li>
+                <li><a href="results.html">結果列表</a></li>
+                <li><a href="admin.html" class="active">管理設定</a></li>
+            </ul>
+        </nav>
     </header>
 
-    <main class="container">
-        <section class="card">
-            <div class="admin-header">
-                <h2>問卷結果列表</h2>
-                <div class="admin-tools">
-                    <span class="refresh-info">
-                        <i class="fas fa-sync-alt"></i> 
-                        <span id="refresh-timer">30</span> 秒後自動刷新
-                    </span>
-                    <button id="email-settings-button" onclick="openEmailSettings()">
-                        <i class="fas fa-envelope"></i> 郵件設定
-                    </button>
-                </div>
-            </div>
-            
-            <div class="table-container">
-                <table id="results-table">
+    <main>
+        <section id="topics-management">
+            <h2>衛教主題管理</h2>
+            <div class="topics-container">
+                <table id="topics-table">
                     <thead>
                         <tr>
-                            <th>QR Code</th>
-                            <th>衛教主題</th>
-                            <th>觀看狀態</th>
-                            <th>問卷分數</th>
-                            <th>提交時間</th>
-                            <th>護理師已知曉</th>
+                            <th>編號</th>
+                            <th>主題名稱</th>
+                            <th>YouTube URL</th>
+                            <th>問卷題數</th>
                             <th>操作</th>
                         </tr>
                     </thead>
-                    <tbody id="results-table-body">
-                        <!-- 表格內容由 JavaScript 生成 -->
+                    <tbody id="topics-body">
+                        <!-- 將由 JavaScript 動態生成 -->
                     </tbody>
                 </table>
+                <button id="save-topics">儲存所有設定</button>
             </div>
         </section>
+
+        <!-- 衛教主題編輯彈窗 -->
+        <div id="topic-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>編輯衛教主題</h3>
+                <form id="topic-form">
+                    <div class="form-group">
+                        <label for="topic-id">編號:</label>
+                        <input type="number" id="topic-id" min="1" max="30" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="topic-name">主題名稱:</label>
+                        <input type="text" id="topic-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="topic-url">YouTube URL:</label>
+                        <input type="url" id="topic-url" required>
+                    </div>
+                    <button type="submit">儲存主題</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 問卷編輯彈窗 -->
+        <div id="questionnaire-modal" class="modal" style="display: none;">
+            <div class="modal-content wide-modal">
+                <span class="close">&times;</span>
+                <h3>編輯問卷 - <span id="current-topic-name"></span></h3>
+                <div id="questions-container">
+                    <!-- 將由 JavaScript 動態生成 -->
+                </div>
+                <div class="question-actions">
+                    <button id="add-yes-no">新增是非題</button>
+                    <button id="add-multiple-choice">新增選擇題</button>
+                    <button id="save-questionnaire">儲存問卷</button>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <!-- 郵件設定彈窗 -->
-    <div id="email-settings-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>護理師郵件設置</h3>
-                <span class="close-modal" onclick="closeEmailSettings()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="email-input-container">
-                    <input type="email" id="new-email" placeholder="請輸入郵件地址">
-                    <button id="add-email-button" onclick="addEmail()">新增</button>
-                </div>
-                <div id="email-list-container">
-                    <!-- 郵件列表由 JavaScript 生成 -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="save-email-settings" onclick="saveEmailSettings()">儲存設定</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="save-success-message" class="modal">
-        <div class="modal-content">
-            <span class="success-icon"><i class="fas fa-check-circle"></i></span>
-            <h3>設定已儲存！</h3>
-            <p>護理師郵件設定已成功更新。</p>
-            <button onclick="closeSaveSuccessMessage()">關閉</button>
-        </div>
-    </div>
-
     <footer>
-        <div class="container">
-            <p>&copy; 2025 衛教影片管理系統. All rights reserved.</p>
-        </div>
+        <p>&copy; 2025 衛教影片觀看系統</p>
     </footer>
 
-    <script src="js/results.js"></script>
-    <script src="js/email-settings.js"></script>
+    <!-- Google API 相關 -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+    
+    <!-- 自定義 JavaScript -->
+    <script src="js/auth.js"></script>
+    <script src="js/drive.js"></script>
+    <script src="js/admin.js"></script>
 </body>
 </html>

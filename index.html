@@ -1,33 +1,84 @@
-<!DOCTYPE html><html lang="zh-Hant"><head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <link rel="stylesheet" href="css/style.css"><title>衛教影片</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="js/firebase-config.js"></script>
-  <script src="js/emailjs-config.js"></script>
-</head><body>
-  <h2>掃描 QR Code</h2>
-  <input id="qr-result" readonly>
-  <button id="btn-scan">開啟相機掃描</button>
-  <div id="reader" style="width:300px;"></div>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>衛教影片觀看</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <header>
+        <h1>衛教影片觀看系統</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="active">影片觀看</a></li>
+                <li><a href="results.html">結果列表</a></li>
+                <li><a href="admin.html">管理設定</a></li>
+            </ul>
+        </nav>
+    </header>
 
-  <h3>選擇衛教主題</h3>
-  <form id="topic-form"><div id="topics"></div>
-    <button type="submit">送出</button>
-  </form>
+    <main>
+        <section id="qrcode-section">
+            <div class="input-group">
+                <input type="text" id="qrcode-result" placeholder="請掃描 QR Code" readonly>
+                <button id="scan-button">掃描 QR Code</button>
+            </div>
+            <div id="qrcode-scanner" style="display: none;">
+                <video id="preview"></video>
+                <button id="close-scanner">關閉掃描器</button>
+            </div>
+        </section>
 
-  <div id="video-section" class="hidden">
-    <video id="edu-video" width="320" controls controlsList="nodownload nofullscreen noremoteplayback"></video><br>
-    <button id="replay" class="hidden">重播</button>
-    <button id="to-survey" class="hidden">填寫問卷</button>
-  </div>
+        <section id="topic-selection">
+            <h2>請選擇衛教主題</h2>
+            <div class="topic-grid" id="topic-list">
+                <!-- 將由 JavaScript 動態生成 -->
+            </div>
+            <button id="submit-topic" disabled>送出</button>
+        </section>
 
-  <div id="survey-section" class="hidden">
-    <h3>問卷</h3>
-    <form id="survey-form"></form>
-  </div>
+        <section id="video-section" style="display: none;">
+            <h2 id="video-title">衛教影片</h2>
+            <div class="video-container">
+                <video id="education-video" controls>
+                    <source src="" type="video/mp4">
+                    您的瀏覽器不支援影片播放。
+                </video>
+            </div>
+            <button id="replay-video">重播影片</button>
+            <div id="questionnaire-section" style="display: none;">
+                <h3>問卷填寫</h3>
+                <form id="questionnaire-form">
+                    <!-- 將由 JavaScript 動態生成 -->
+                </form>
+                <button id="submit-questionnaire">送出問卷</button>
+            </div>
+        </section>
 
-  <script src="js/main.js"></script>
-</body></html>
+        <div id="completion-message" style="display: none;">
+            <h3>已將問卷填畢，將通知護理師與您說明。</h3>
+            <button id="return-home">返回主頁</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 衛教影片觀看系統</p>
+    </footer>
+
+    <!-- Google API 相關 -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+
+    <!-- 外部庫 -->
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    
+    <!-- 自定義 JavaScript -->
+    <script src="js/auth.js"></script>
+    <script src="js/drive.js"></script>
+    <script src="js/qrcode.js"></script>
+    <script src="js/video-player.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>

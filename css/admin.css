@@ -1,184 +1,183 @@
-/* 管理頁面頭部樣式 */
-.admin-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.admin-tools {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.refresh-info {
-    color: #666;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-#refresh-timer {
-    font-weight: bold;
-    color: var(--primary-color);
-}
-
-/* 表格樣式 */
-.table-container {
+/* 主題管理區塊 */
+.topics-container {
     overflow-x: auto;
 }
 
-#results-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+#topics-table {
+    min-width: 800px;
 }
 
-#results-table th,
-#results-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
+/* 操作按鈕 */
+.action-button {
+    padding: 0.5rem 0.75rem;
+    margin: 0 0.25rem;
+    font-size: 0.9rem;
 }
 
-#results-table th {
-    background-color: rgba(74, 155, 209, 0.1);
-    font-weight: 500;
-    color: var(--primary-dark);
+.edit-button {
+    background-color: #3498db;
 }
 
-#results-table tr:nth-child(even) {
-    background-color: rgba(74, 155, 209, 0.02);
+.edit-button:hover {
+    background-color: #2980b9;
 }
 
-#results-table tr:hover {
-    background-color: rgba(74, 155, 209, 0.05);
+.questionnaire-button {
+    background-color: #9b59b6;
 }
 
-.watch-status {
-    padding: 5px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
+.questionnaire-button:hover {
+    background-color: #8e44ad;
 }
 
-.status-completed {
-    background-color: #d4edda;
-    color: #155724;
+#save-topics {
+    display: block;
+    margin: 1.5rem auto;
+    padding: 0.75rem 2rem;
 }
 
-.status-watching {
-    background-color: #fff3cd;
-    color: #856404;
+/* 問卷編輯 */
+#questions-container {
+    margin-bottom: 2rem;
+    max-height: 500px;
+    overflow-y: auto;
 }
 
-.status-pending {
-    background-color: #f8d7da;
-    color: #721c24;
+.question-card {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    background-color: #f9f9f9;
+    position: relative;
 }
 
-.delete-button {
-    background-color: #ff4d4d;
-    padding: 6px 12px;
-    border-radius: 4px;
-}
-
-.delete-button:hover {
-    background-color: #cc0000;
-}
-
-/* 郵件設置樣式 */
-#email-settings-modal .modal-content {
-    max-width: 600px;
-}
-
-.email-input-container {
+.delete-question {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background-color: #e74c3c;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
 }
 
-.email-row {
+.question-content input {
+    font-weight: bold;
+}
+
+.correct-answer label {
+    margin-right: 1rem;
+}
+
+.score-input {
+    width: 100px;
+    display: inline-block;
+    margin-right: 1rem;
+}
+
+.options-container {
+    margin: 1rem 0;
+}
+
+.option-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.option-row input[type="text"] {
+    flex: 1;
+    margin-right: 0.5rem;
+    margin-bottom
+}
+
+.option-row input[type="radio"] {
+    width: auto;
+    margin-right: 0.5rem;
+    margin-bottom: 0;
+}
+
+.remove-option {
+    background-color: #e74c3c;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.add-option {
+    margin-top: 0.5rem;
+    background-color: #2ecc71;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+}
+
+.add-option:hover {
+    background-color: #27ae60;
+}
+
+.question-actions {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    background-color: #f5f5f5;
-    border-radius: 4px;
-    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
 }
 
-.email-row select {
-    width: 100px;
+#add-yes-no, #add-multiple-choice {
+    flex: 1;
 }
 
-#save-success-message .modal-content {
-    text-align: center;
-    padding: 30px;
+#add-yes-no {
+    background-color: #f39c12;
 }
 
-#save-success-message button {
-    margin-top: 20px;
-    background-color: var(--secondary-color);
+#add-yes-no:hover {
+    background-color: #e67e22;
 }
 
-#save-success-message button:hover {
-    background-color: #449d44;
+#add-multiple-choice {
+    background-color: #9b59b6;
 }
 
-/* 無數據提示 */
-.no-data-message {
-    text-align: center;
-    padding: 30px;
-    color: #666;
-    font-style: italic;
+#add-multiple-choice:hover {
+    background-color: #8e44ad;
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
-    .admin-header {
+#save-questionnaire {
+    width: 100%;
+    margin-top: 1rem;
+    background-color: #2ecc71;
+}
+
+#save-questionnaire:hover {
+    background-color: #27ae60;
+}
+
+/* 響應式 */
+@media screen and (max-width: 768px) {
+    .question-actions {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
     }
     
-    .admin-tools {
+    #add-yes-no, #add-multiple-choice {
         width: 100%;
-        justify-content: space-between;
+        margin-bottom: 0.5rem;
     }
     
-    #results-table thead {
-        display: none;
+    .option-row {
+        flex-wrap: wrap;
     }
     
-    #results-table tbody tr {
-        display: block;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        margin-bottom: 15px;
-        padding: 10px;
-    }
-    
-    #results-table tbody td {
-        display: flex;
-        justify-content: space-between;
-        border-bottom: 1px dotted var(--border-color);
-        padding: 8px 0;
-    }
-    
-    #results-table tbody td:last-child {
-        border-bottom: none;
-    }
-    
-    #results-table tbody td::before {
-        content: attr(data-label);
-        font-weight: 500;
-        margin-right: 10px;
-    }
-    
-    .email-input-container {
-        flex-direction: column;
+    .option-row input[type="text"] {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 0.5rem;
     }
 }

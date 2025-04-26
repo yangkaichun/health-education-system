@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問卷結果列表</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/results.css">
+</head>
+<body>
+    <header>
+        <h1>衛教影片觀看系統</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">影片觀看</a></li>
+                <li><a href="results.html" class="active">結果列表</a></li>
+                <li><a href="admin.html">管理設定</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="results-section">
+            <div class="results-header">
+                <h2>問卷結果列表</h2>
+                <button id="email-settings-button">設定通知 Email</button>
+            </div>
+            
+            <div id="refresh-info">
+                <span>頁面將每 30 秒自動刷新</span>
+                <span id="countdown">30</span>
+                <button id="manual-refresh">立即刷新</button>
+            </div>
+
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th>QR Code 代碼</th>
+                        <th>衛教主題</th>
+                        <th>影片觀看狀態</th>
+                        <th>問卷分數</th>
+                        <th>護理師已知曉</th>
+                        <th>觀看時間</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    <!-- 將由 JavaScript 動態生成 -->
+                </tbody>
+            </table>
+
+            <!-- Email 設定彈窗 -->
+            <div id="email-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3>設定通知 Email</h3>
+                    <div id="email-list">
+                        <!-- 將由 JavaScript 動態生成 -->
+                    </div>
+                    <div class="email-form">
+                        <input type="email" id="new-email" placeholder="新增 Email">
+                        <button id="add-email">新增</button>
+                    </div>
+                    <button id="save-emails">儲存設定</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 衛教影片觀看系統</p>
+    </footer>
+
+    <!-- Google API 相關 -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+    
+    <!-- 自定義 JavaScript -->
+    <script src="js/auth.js"></script>
+    <script src="js/drive.js"></script>
+    <script src="js/results.js"></script>
+</body>
+</html>
