@@ -29,7 +29,32 @@
   },
   {
     "topicId": 2,
-    "questions": []
+    "questions": [
+      {
+        "type": "yesno",
+        "text": "化學藥物是抑制癌細胞的分裂或破壞腫瘤的生長，達到治療及控 制癌症",
+        "correctAnswer": "是",
+        "score": 20
+      },
+      {
+        "type": "yesno",
+        "text": "化學治療跟放射治療是可以同時執行的",
+        "correctAnswer": "是",
+        "score": 30
+      },
+      {
+        "type": "choice",
+        "text": "化學治療的目的為何?",
+        "options": [
+          "治療癌症",
+          "改善生活品質",
+          "抑制癌細胞",
+          ")以上皆是"
+        ],
+        "correctOptionIndex": 3,
+        "score": 50
+      }
+    ]
   },
   {
     "topicId": 3,
