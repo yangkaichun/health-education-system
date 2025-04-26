@@ -4,9 +4,9 @@ let topics = [];
 let selectedTopic = null;
 let currentQuestionnaire = null;
 
-// 當 Google API 認證完成時
+// 當 GitHub API 認證完成時
 function onAuthenticated() {
-    initializeDriveFiles().then(success => {
+    initializeGitHubStorage().then(success => {
         if (success) {
             loadTopics();
         }

@@ -1,94 +1,167 @@
-// Google API 認證與初始化
+// GitHub API 認證與初始化
 
-// API 金鑰與客戶端 ID
-const API_KEY = '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';
-const CLIENT_ID = '344265714322-jdk0joqgo1a8357b841rl1h2u9b4s0q8.apps.googleusercontent.com您的客戶端ID';
-const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+// GitHub 認證設定
+let GITHUB_TOKEN = localStorage.getItem('github_token') || '';
+const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
+const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
 
-let tokenClient;
-let gapiInited = false;
-let gisInited = false;
 let isAuthenticated = false;
 
 // 初始化頁面
 function initPage() {
-    document.addEventListener('DOMContentLoaded', initializeGapiClient);
-}
-
-// 初始化 Google API 客戶端
-async function initializeGapiClient() {
-    try {
-        await gapi.client.init({
-            apiKey: API_KEY,
-            discoveryDocs: DISCOVERY_DOCS,
-        });
-        gapiInited = true;
-        maybeEnableButtons();
-    } catch (err) {
-        console.error('Error initializing GAPI client:', err);
-        showError('無法初始化 Google API 客戶端。請確認網路連線並重新載入頁面。');
-    }
-}
-
-// 初始化 Google Identity Services
-function initializeGis() {
-    try {
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
-            scope: SCOPES,
-            callback: '', // 將在 requestAccessToken 中設置
-        });
-        gisInited = true;
-        maybeEnableButtons();
-    } catch (err) {
-        console.error('Error initializing GIS client:', err);
-        showError('無法初始化 Google 身份服務。請確認網路連線並重新載入頁面。');
-    }
-}
-
-// 檢查並啟用按鈕
-function maybeEnableButtons() {
-    if (gapiInited && gisInited) {
-        checkAuthStatus();
-    }
+    document.addEventListener('DOMContentLoaded', checkAuthStatus);
 }
 
 // 檢查認證狀態
 function checkAuthStatus() {
-    // 檢查是否已授權
-    const token = gapi.client.getToken();
-    if (token && token.access_token) {
-        isAuthenticated = true;
-        console.log('User is already authenticated');
-        onAuthSuccess();
+    if (GITHUB_TOKEN) {
+        // 驗證 token 是否有效
+        verifyGitHubToken()
+            .then(valid => {
+                isAuthenticated = valid;
+                if (valid) {
+                    console.log('User is already authenticated with GitHub');
+                    onAuthSuccess();
+                } else {
+                    console.log('GitHub token is invalid');
+                    showGitHubLoginForm();
+                }
+            });
     } else {
         console.log('User is not authenticated');
-        requestAccessToken();
+        showGitHubLoginForm();
     }
 }
 
-// 請求存取權杖
-function requestAccessToken() {
-    tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) {
-            console.error('Error requesting access token:', resp);
-            showError('無法獲取授權。請重新載入頁面並授予必要的權限。');
+// 驗證 GitHub 令牌
+async function verifyGitHubToken() {
+    try {
+        const response = await fetch('https://api.github.com/user', {
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`
+            }
+        });
+        return response.status === 200;
+    } catch (error) {
+        console.error('Error verifying GitHub token:', error);
+        return false;
+    }
+}
+
+// 顯示 GitHub 登入表單
+function showGitHubLoginForm() {
+    // 建立模態框
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'auth-modal';
+    modalContainer.style.position = 'fixed';
+    modalContainer.style.top = '0';
+    modalContainer.style.left = '0';
+    modalContainer.style.width = '100%';
+    modalContainer.style.height = '100%';
+    modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modalContainer.style.display = 'flex';
+    modalContainer.style.justifyContent = 'center';
+    modalContainer.style.alignItems = 'center';
+    modalContainer.style.zIndex = '1000';
+    
+    // 創建表單
+    const formContainer = document.createElement('div');
+    formContainer.style.backgroundColor = 'white';
+    formContainer.style.padding = '2rem';
+    formContainer.style.borderRadius = '8px';
+    formContainer.style.width = '90%';
+    formContainer.style.maxWidth = '400px';
+    
+    // 標題
+    const title = document.createElement('h2');
+    title.textContent = 'GitHub 身份驗證';
+    title.style.marginBottom = '1.5rem';
+    title.style.color = '#4a89dc';
+    
+    // 說明
+    const instruction = document.createElement('p');
+    instruction.innerHTML = '請輸入您的 GitHub <a href="https://github.com/settings/tokens" target="_blank">個人訪問令牌</a>，需要 repo 權限。';
+    instruction.style.marginBottom = '1.5rem';
+    
+    // 輸入框
+    const tokenInput = document.createElement('input');
+    tokenInput.type = 'text';
+    tokenInput.placeholder = 'GitHub 個人訪問令牌';
+    tokenInput.style.width = '100%';
+    tokenInput.style.padding = '0.75rem';
+    tokenInput.style.marginBottom = '1rem';
+    tokenInput.style.border = '1px solid #ddd';
+    tokenInput.style.borderRadius = '4px';
+    
+    // 按鈕
+    const submitButton = document.createElement('button');
+    submitButton.textContent = '登入';
+    submitButton.style.backgroundColor = '#4a89dc';
+    submitButton.style.color = 'white';
+    submitButton.style.border = 'none';
+    submitButton.style.padding = '0.75rem 1.5rem';
+    submitButton.style.borderRadius = '4px';
+    submitButton.style.cursor = 'pointer';
+    submitButton.style.width = '100%';
+    
+    // 錯誤訊息
+    const errorMessage = document.createElement('p');
+    errorMessage.style.color = '#e74c3c';
+    errorMessage.style.marginTop = '1rem';
+    errorMessage.style.display = 'none';
+    
+    // 組合元素
+    formContainer.appendChild(title);
+    formContainer.appendChild(instruction);
+    formContainer.appendChild(tokenInput);
+    formContainer.appendChild(submitButton);
+    formContainer.appendChild(errorMessage);
+    modalContainer.appendChild(formContainer);
+    document.body.appendChild(modalContainer);
+    
+    // 提交事件
+    submitButton.addEventListener('click', () => {
+        const token = tokenInput.value.trim();
+        if (!token) {
+            errorMessage.textContent = '請輸入有效的令牌';
+            errorMessage.style.display = 'block';
             return;
         }
         
-        isAuthenticated = true;
-        console.log('Successfully obtained access token');
-        onAuthSuccess();
-    };
-    
-    if (gapi.client.getToken() === null) {
-        // 取得新的存取權杖
-        tokenClient.requestAccessToken({prompt: 'consent'});
-    } else {
-        // 跳過同意螢幕，使用先前已授權的權杖
-        tokenClient.requestAccessToken({prompt: ''});
-    }
+        // 驗證令牌
+        errorMessage.style.display = 'none';
+        submitButton.disabled = true;
+        submitButton.textContent = '驗證中...';
+        
+        fetch('https://api.github.com/user', {
+            headers: {
+                'Authorization': `token ${token}`
+            }
+        })
+        .then(response => {
+            if (response.status === 200) {
+                // 令牌有效
+                GITHUB_TOKEN = token;
+                localStorage.setItem('github_token', token);
+                isAuthenticated = true;
+                modalContainer.remove();
+                onAuthSuccess();
+            } else {
+                // 令牌無效
+                errorMessage.textContent = '無效的令牌或權限不足';
+                errorMessage.style.display = 'block';
+                submitButton.disabled = false;
+                submitButton.textContent = '登入';
+            }
+        })
+        .catch(error => {
+            console.error('Error authenticating with GitHub:', error);
+            errorMessage.textContent = '驗證過程中發生錯誤';
+            errorMessage.style.display = 'block';
+            submitButton.disabled = false;
+            submitButton.textContent = '登入';
+        });
+    });
 }
 
 // 顯示錯誤訊息
@@ -106,6 +179,11 @@ function showError(message) {
     
     // 顯示到頁面上
     document.body.insertBefore(errorContainer, document.body.firstChild);
+    
+    // 5 秒後自動移除
+    setTimeout(() => {
+        errorContainer.remove();
+    }, 5000);
 }
 
 // 授權成功後執行的函數
@@ -116,11 +194,7 @@ function onAuthSuccess() {
     }
 }
 
-// 載入 Google API 客戶端
+// 載入頁面時檢查認證
 document.addEventListener('DOMContentLoaded', function() {
-    // 載入 GIS 腳本
-    initializeGis();
-    
-    // 載入 GAPI 腳本
-    gapi.load('client', initializeGapiClient);
+    checkAuthStatus();
 });
