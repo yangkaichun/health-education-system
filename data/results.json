@@ -20,5 +20,16 @@
     "maxScore": 12,
     "nurseAcknowledged": false,
     "timestamp": "2025-04-26T12:50:16.434Z"
+  },
+  {
+    "id": "1745672250022",
+    "qrCode": "701-1",
+    "topicId": 1,
+    "topicName": "靜脈注射化學治療藥物注意事項",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-26T12:57:30.022Z"
   }
 ]
