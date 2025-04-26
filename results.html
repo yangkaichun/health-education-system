@@ -2,12 +2,24 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>問卷結果列表</title>
+    <!-- 確保 CSS 路徑正確且按正確順序載入 -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/results.css">
+    <!-- 預加載關鍵資源 -->
+    <link rel="preload" href="js/github-auth.js" as="script">
+    <link rel="preload" href="js/github-storage.js" as="script">
 </head>
 <body>
+    <!-- 頁面加載指示器 -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">正在載入...</div>
+    </div>
+
     <header>
         <h1>衛教影片觀看系統</h1>
         <nav>
@@ -20,6 +32,11 @@
     </header>
 
     <main>
+        <!-- 系統訊息區域 -->
+        <div id="system-messages" class="system-messages">
+            <!-- 錯誤和狀態消息將顯示在這裡 -->
+        </div>
+
         <section id="results-section">
             <div class="results-header">
                 <h2>問卷結果列表</h2>
@@ -27,27 +44,38 @@
             </div>
             
             <div id="refresh-info">
-                <span>頁面將每 30 秒自動刷新</span>
+                <span>頁面將每 <strong id="refresh-seconds">30</strong> 秒自動刷新</span>
                 <span id="countdown">30</span>
                 <button id="manual-refresh">立即刷新</button>
             </div>
 
-            <table id="results-table">
-                <thead>
-                    <tr>
-                        <th>QR Code 代碼</th>
-                        <th>衛教主題</th>
-                        <th>影片觀看狀態</th>
-                        <th>問卷分數</th>
-                        <th>護理師已知曉</th>
-                        <th>觀看時間</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="results-body">
-                    <!-- 將由 JavaScript 動態生成 -->
-                </tbody>
-            </table>
+            <div class="results-container">
+                <table id="results-table">
+                    <thead>
+                        <tr>
+                            <th>QR Code 代碼</th>
+                            <th>衛教主題</th>
+                            <th>影片觀看狀態</th>
+                            <th>問卷分數</th>
+                            <th>護理師已知曉</th>
+                            <th>觀看時間</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body">
+                        <!-- 將由 JavaScript 動態生成 -->
+                        <tr>
+                            <td colspan="7" class="loading-message">載入中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="no-results" id="no-results" style="display: none;">
+                <div class="no-results-icon">📋</div>
+                <h3>尚無問卷結果</h3>
+                <p>當使用者完成衛教影片觀看並提交問卷後，結果將顯示在此處。</p>
+            </div>
 
             <!-- Email 設定彈窗 -->
             <div id="email-modal" class="modal" style="display: none;">
@@ -56,12 +84,22 @@
                     <h3>設定通知 Email</h3>
                     <div id="email-list">
                         <!-- 將由 JavaScript 動態生成 -->
+                        <div class="loading-indicator">
+                            <div class="spinner small"></div>
+                            <span>載入 Email 設定...</span>
+                        </div>
                     </div>
                     <div class="email-form">
                         <input type="email" id="new-email" placeholder="新增 Email">
                         <button id="add-email">新增</button>
                     </div>
-                    <button id="save-emails">儲存設定</button>
+                    <div class="form-help">
+                        <p>新問卷結果提交時，系統將發送通知至已啟用的 Email 地址。</p>
+                    </div>
+                    <div class="form-buttons">
+                        <button id="cancel-email-settings" class="secondary-button">取消</button>
+                        <button id="save-emails" class="primary-button">儲存設定</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -71,9 +109,110 @@
         <p>&copy; 2025 衛教影片觀看系統</p>
     </footer>
     
-    <!-- 自定義 JavaScript -->
+    <!-- 修正順序：先加載認證和存儲腳本 -->
     <script src="js/github-auth.js"></script>
     <script src="js/github-storage.js"></script>
+    
+    <!-- 再加載頁面特定腳本 -->
     <script src="js/results.js"></script>
+    
+    <script>
+        // 頁面加載完成後隱藏加載指示器
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const loader = document.getElementById('page-loader');
+                if (loader) {
+                    loader.classList.add('hidden');
+                    setTimeout(function() {
+                        loader.remove();
+                    }, 300);
+                }
+            }, 500);
+            
+            // 修正 Email 設定模態框事件
+            const emailSettingsButton = document.getElementById('email-settings-button');
+            const emailModal = document.getElementById('email-modal');
+            const closeBtn = emailModal?.querySelector('.close');
+            const cancelBtn = document.getElementById('cancel-email-settings');
+            
+            if (emailSettingsButton && emailModal) {
+                emailSettingsButton.addEventListener('click', function() {
+                    emailModal.style.display = 'block';
+                    
+                    // 如果有 loadEmailList 函數，調用它
+                    if (typeof loadEmailList === 'function') {
+                        loadEmailList();
+                    }
+                });
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    emailModal.style.display = 'none';
+                });
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function() {
+                    emailModal.style.display = 'none';
+                });
+            }
+            
+            // 點擊模態框外部關閉
+            window.addEventListener('click', function(event) {
+                if (event.target === emailModal) {
+                    emailModal.style.display = 'none';
+                }
+            });
+        });
+        
+        // 添加全局錯誤處理
+        window.addEventListener('error', function(event) {
+            console.error('全局錯誤:', event.message, event.filename, event.lineno);
+            
+            // 顯示友好錯誤訊息
+            const systemMessages = document.getElementById('system-messages');
+            if (systemMessages) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'error-message';
+                errorMsg.innerHTML = `
+                    <strong>發生錯誤:</strong> 
+                    系統運行時遇到問題。如果問題持續存在，請聯繫管理員。
+                    <button onclick="this.parentNode.remove();" class="close-message">關閉</button>
+                `;
+                systemMessages.appendChild(errorMsg);
+                
+                // 停止自動刷新計時器
+                if (typeof stopCountdown === 'function') {
+                    stopCountdown();
+                }
+            }
+            
+            // 如果表格正在載入，顯示錯誤訊息
+            const resultsBody = document.getElementById('results-body');
+            if (resultsBody && resultsBody.querySelector('.loading-message')) {
+                resultsBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="error-message">
+                            載入結果時發生錯誤。請嘗試
+                            <button onclick="location.reload();" class="reload-button">重新載入頁面</button>
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+        
+        // 提供刷新倒數計時器停止功能
+        function stopCountdown() {
+            if (window.countdownInterval) {
+                clearInterval(window.countdownInterval);
+                const countdownElement = document.getElementById('countdown');
+                if (countdownElement) {
+                    countdownElement.textContent = '已停止';
+                    countdownElement.style.color = '#e74c3c';
+                }
+            }
+        }
+    </script>
 </body>
 </html>
