@@ -5,7 +5,7 @@ const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
 const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
 const DATA_PATH = 'data';
 
-const GITHUB_TOKEN = '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';
+const GITHUB_TOKEN = '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';
 
 // 檔案路徑
 const TOPICS_FILE = 'topics.json';
