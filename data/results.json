@@ -1,5 +1,49 @@
 [
   {
+    "id": "1745672954211",
+    "qrCode": "7011",
+    "topicId": 1,
+    "topicName": "靜脈注射化學治療藥物注意事項",
+    "status": "completed",
+    "score": 2,
+    "maxScore": 12,
+    "nurseAcknowledged": true,
+    "timestamp": "2025-04-26T13:09:14.211Z"
+  },
+  {
+    "id": "1745672930366",
+    "qrCode": "7011",
+    "topicId": 1,
+    "topicName": "靜脈注射化學治療藥物注意事項",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-26T13:08:50.366Z"
+  },
+  {
+    "id": "1745672535963",
+    "qrCode": "7022",
+    "topicId": 2,
+    "topicName": "化學治療的簡介(APT)",
+    "status": "completed",
+    "score": 80,
+    "maxScore": 100,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-26T13:02:15.963Z"
+  },
+  {
+    "id": "1745672519284",
+    "qrCode": "7022",
+    "topicId": 2,
+    "topicName": "化學治療的簡介(APT)",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-26T13:01:59.284Z"
+  },
+  {
     "id": "1745672268491",
     "qrCode": "701-1",
     "topicId": 1,
@@ -42,49 +86,5 @@
     "maxScore": 0,
     "nurseAcknowledged": false,
     "timestamp": "2025-04-26T12:49:59.007Z"
-  },
-  {
-    "id": "1745672519284",
-    "qrCode": "7022",
-    "topicId": 2,
-    "topicName": "化學治療的簡介(APT)",
-    "status": "viewing",
-    "score": 0,
-    "maxScore": 0,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-26T13:01:59.284Z"
-  },
-  {
-    "id": "1745672535963",
-    "qrCode": "7022",
-    "topicId": 2,
-    "topicName": "化學治療的簡介(APT)",
-    "status": "completed",
-    "score": 80,
-    "maxScore": 100,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-26T13:02:15.963Z"
-  },
-  {
-    "id": "1745672930366",
-    "qrCode": "7011",
-    "topicId": 1,
-    "topicName": "靜脈注射化學治療藥物注意事項",
-    "status": "viewing",
-    "score": 0,
-    "maxScore": 0,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-26T13:08:50.366Z"
-  },
-  {
-    "id": "1745672954211",
-    "qrCode": "7011",
-    "topicId": 1,
-    "topicName": "靜脈注射化學治療藥物注意事項",
-    "status": "completed",
-    "score": 2,
-    "maxScore": 12,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-26T13:09:14.211Z"
   }
 ]
