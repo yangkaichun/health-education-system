@@ -7,7 +7,7 @@ const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
 const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
 
 // 預設的 GitHub Token - 直接內建在代碼中
-const DEFAULT_TOKEN = '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';
+const DEFAULT_TOKEN = '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';
 
 // 頁面載入時初始化認證
 document.addEventListener('DOMContentLoaded', initializeAuth);
