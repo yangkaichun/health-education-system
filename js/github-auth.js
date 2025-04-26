@@ -1,7 +1,7 @@
 // GitHub 認證相關功能
 
 // 全域變數
-let isAuthenticated = false;
+let isAuthenticated = true;
 const GITHUB_TOKEN_KEY = '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';
 const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
 const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
