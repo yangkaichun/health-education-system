@@ -1,13 +1,7 @@
 // GitHub API 數據存儲
 
-// GitHub 設定
-const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
-const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
-const DATA_PATH = 'data';
-
-const GITHUB_TOKEN = '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';
-
 // 檔案路徑
+const DATA_PATH = 'data';
 const TOPICS_FILE = 'topics.json';
 const QUESTIONNAIRES_FILE = 'questionnaires.json';
 const RESULTS_FILE = 'results.json';
@@ -52,14 +46,17 @@ async function readGitHubFile(filename) {
     }
     
     try {
-        // 獲取檔案內容
-        const token = localStorage.getItem('github_token');
-        const headers = token ? { 'Authorization': `token ${token}` } : {};
+        // 獲取 Token
+        const token = getStoredToken();
+        if (!token) {
+            throw new Error('需要 GitHub Token 才能讀取檔案');
+        }
         
+        // 獲取檔案內容
         const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_PATH}/${filename}`, {
             headers: {
-                'Accept': 'application/vnd.github.v3+json',
-                ...headers
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
             }
         });
         
@@ -70,12 +67,10 @@ async function readGitHubFile(filename) {
                 const defaultData = initializeDefaultData(filename);
                 
                 // 嘗試創建檔案
-                if (token) {
-                    try {
-                        await updateGitHubFile(filename, defaultData);
-                    } catch (createError) {
-                        console.warn(`無法創建檔案 ${filename}:`, createError);
-                    }
+                try {
+                    await updateGitHubFile(filename, defaultData);
+                } catch (createError) {
+                    console.warn(`無法創建檔案 ${filename}:`, createError);
                 }
                 
                 return defaultData;
@@ -118,9 +113,10 @@ async function readGitHubFile(filename) {
 // 更新 GitHub 檔案
 async function updateGitHubFile(filename, data) {
     try {
-        const token = localStorage.getItem('github_token');
+        // 獲取 Token
+        const token = getStoredToken();
         if (!token) {
-            throw new Error('需要 GitHub 令牌才能更新檔案');
+            throw new Error('需要 GitHub Token 才能更新檔案');
         }
         
         const cacheKey = filename.replace('.json', '');
@@ -447,7 +443,7 @@ async function updateEmailList(emails) {
     }
 }
 
-// 傳送通知 Email
+// 傳送通知 Email (模擬功能)
 async function sendNotificationEmail(result) {
     try {
         // 由於 GitHub Pages 無法發送實際的 Email，這裡只是模擬操作
@@ -462,9 +458,6 @@ async function sendNotificationEmail(result) {
         } else {
             console.log('[模擬] 沒有啟用的 Email 地址可以通知');
         }
-        
-        // 在實際應用中，這裡應該使用 Email 服務 API 發送郵件
-        // 例如：SendGrid, Mailgun, AWS SES 等
         
         return true;
     } catch (error) {
@@ -498,10 +491,12 @@ function exportAllData() {
         linkElement.setAttribute('href', dataUri);
         linkElement.setAttribute('download', exportFileDefaultName);
         linkElement.click();
+        
+        showNotification('資料匯出成功', 'success');
     })
     .catch(error => {
         console.error('匯出數據時發生錯誤:', error);
-        alert('匯出數據時發生錯誤: ' + error.message);
+        showNotification('匯出數據時發生錯誤: ' + error.message, 'error');
     });
 }
 
@@ -546,50 +541,14 @@ async function importAllData(jsonData) {
         console.log('成功匯入: ' + importSummary.join(', '));
         
         // 清除緩存
-        dataCache = {
-            topics: { data: null, timestamp: 0 },
-            questionnaires: { data: null, timestamp: 0 },
-            results: { data: null, timestamp: 0 },
-            emails: { data: null, timestamp: 0 }
-        };
+        invalidateCache();
         
+        showNotification('資料匯入成功: ' + importSummary.join(', '), 'success');
         return true;
     } catch (error) {
         console.error('匯入數據時發生錯誤:', error);
+        showNotification('匯入數據時發生錯誤: ' + error.message, 'error');
         throw error;
-    }
-}
-
-// 檢查 GitHub 連接狀態
-async function checkGitHubConnection() {
-    try {
-        const token = localStorage.getItem('github_token');
-        const headers = token ? { 'Authorization': `token ${token}` } : {};
-        
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}`, {
-            headers: {
-                'Accept': 'application/vnd.github.v3+json',
-                ...headers
-            }
-        });
-        
-        if (response.ok) {
-            const repoData = await response.json();
-            console.log(`成功連接到 GitHub 倉庫: ${repoData.full_name}`);
-            return {
-                connected: true,
-                repoName: repoData.full_name,
-                repoUrl: repoData.html_url
-            };
-        } else {
-            throw new Error(`GitHub API 回應錯誤: ${response.status}`);
-        }
-    } catch (error) {
-        console.error('檢查 GitHub 連接時發生錯誤:', error);
-        return {
-            connected: false,
-            error: error.message
-        };
     }
 }
 
@@ -602,4 +561,162 @@ function invalidateCache() {
         emails: { data: null, timestamp: 0 }
     };
     console.log('本地緩存已清除');
+    return true;
+}
+
+// 檢查是否已初始化儲存庫結構
+async function checkRepositoryStructure() {
+    try {
+        const token = getStoredToken();
+        if (!token) {
+            return { initialized: false, error: '未提供 GitHub Token' };
+        }
+        
+        // 檢查資料目錄是否存在
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_PATH}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (response.status === 404) {
+            // 資料目錄不存在，嘗試創建
+            return { initialized: false, error: '資料目錄不存在', needsInitialization: true };
+        }
+        
+        if (!response.ok) {
+            return { initialized: false, error: `檢查資料目錄時發生錯誤: ${response.status}` };
+        }
+        
+        // 資料目錄存在，檢查必要的檔案
+        const filesStatus = await Promise.all([
+            checkFileExists(TOPICS_FILE),
+            checkFileExists(QUESTIONNAIRES_FILE),
+            checkFileExists(RESULTS_FILE),
+            checkFileExists(EMAILS_FILE)
+        ]);
+        
+        const missingFiles = [];
+        [TOPICS_FILE, QUESTIONNAIRES_FILE, RESULTS_FILE, EMAILS_FILE].forEach((file, index) => {
+            if (!filesStatus[index]) {
+                missingFiles.push(file);
+            }
+        });
+        
+        if (missingFiles.length > 0) {
+            return { 
+                initialized: false, 
+                error: `缺少必要檔案: ${missingFiles.join(', ')}`,
+                missingFiles,
+                needsInitialization: true
+            };
+        }
+        
+        return { initialized: true };
+    } catch (error) {
+        console.error('檢查儲存庫結構時發生錯誤:', error);
+        return { initialized: false, error: error.message };
+    }
+}
+
+// 檢查檔案是否存在
+async function checkFileExists(filename) {
+    try {
+        const token = getStoredToken();
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_PATH}/${filename}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        return response.status === 200;
+    } catch (error) {
+        console.error(`檢查檔案 ${filename} 是否存在時發生錯誤:`, error);
+        return false;
+    }
+}
+
+// 創建資料目錄
+async function createDataDirectory() {
+    try {
+        const token = getStoredToken();
+        if (!token) {
+            throw new Error('未提供 GitHub Token');
+        }
+        
+        // GitHub API 不直接支援創建空目錄
+        // 所以我們創建一個 .gitkeep 檔案在目錄中
+        const content = '# 此檔案用於維持資料目錄結構\n';
+        const contentEncoded = btoa(content);
+        
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_PATH}/.gitkeep`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `創建資料目錄 - ${new Date().toISOString()}`,
+                content: contentEncoded
+            })
+        });
+        
+        return response.ok;
+    } catch (error) {
+        console.error('創建資料目錄時發生錯誤:', error);
+        return false;
+    }
+}
+
+// 初始化儲存庫結構
+async function initializeRepositoryStructure() {
+    try {
+        // 檢查結構
+        const checkResult = await checkRepositoryStructure();
+        
+        if (checkResult.initialized) {
+            return { success: true, message: '儲存庫結構已初始化' };
+        }
+        
+        // 如果需要創建資料目錄
+        if (!checkResult.missingFiles && checkResult.needsInitialization) {
+            const createDirResult = await createDataDirectory();
+            if (!createDirResult) {
+                return { success: false, message: '無法創建資料目錄' };
+            }
+        }
+        
+        // 創建缺少的檔案
+        const initializePromises = [];
+        
+        if (checkResult.missingFiles) {
+            if (checkResult.missingFiles.includes(TOPICS_FILE)) {
+                initializePromises.push(updateGitHubFile(TOPICS_FILE, initializeDefaultData(TOPICS_FILE)));
+            }
+            
+            if (checkResult.missingFiles.includes(QUESTIONNAIRES_FILE)) {
+                initializePromises.push(updateGitHubFile(QUESTIONNAIRES_FILE, initializeDefaultData(QUESTIONNAIRES_FILE)));
+            }
+            
+            if (checkResult.missingFiles.includes(RESULTS_FILE)) {
+                initializePromises.push(updateGitHubFile(RESULTS_FILE, initializeDefaultData(RESULTS_FILE)));
+            }
+            
+            if (checkResult.missingFiles.includes(EMAILS_FILE)) {
+                initializePromises.push(updateGitHubFile(EMAILS_FILE, initializeDefaultData(EMAILS_FILE)));
+            }
+        }
+        
+        if (initializePromises.length > 0) {
+            await Promise.all(initializePromises);
+        }
+        
+        return { success: true, message: '儲存庫結構初始化成功' };
+    } catch (error) {
+        console.error('初始化儲存庫結構時發生錯誤:', error);
+        return { success: false, message: '初始化儲存庫結構時發生錯誤: ' + error.message };
+    }
 }
