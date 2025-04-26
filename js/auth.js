@@ -1,7 +1,7 @@
 // Google API 認證與初始化
 
 // API 金鑰與客戶端 ID
-const API_KEY = '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';
+const API_KEY = 'AIzaSyCJqYZjHQRGuTeVvxMI2v8sjILvDoYOpAM';
 const CLIENT_ID = '344265714322-jdk0joqgo1a8357b841rl1h2u9b4s0q8.apps.googleusercontent.com';
 const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
