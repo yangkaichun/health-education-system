@@ -1,19 +1,3 @@
-/* style.css 開頭添加 */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html, body {
-    font-family: 'Microsoft JhengHei UI', 'PingFang TC', 'Noto Sans TC', 'Segoe UI', Arial, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background-color: #f9f9fa;
-    width: 100%;
-    height: 100%;
-}
-
 /* 結果列表區塊 */
 .results-header {
     display: flex;
@@ -33,24 +17,38 @@ html, body {
     margin-bottom: 1.5rem;
     font-size: 0.9rem;
     color: #666;
+    background-color: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 4px;
 }
 
 #countdown {
     margin: 0 0.5rem;
     font-weight: bold;
     color: #4a89dc;
+    background-color: #e8f0ff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
 }
 
 #manual-refresh {
     padding: 0.4rem 0.8rem;
     font-size: 0.9rem;
-    margin-left: 1rem;
+    margin-left: auto;
+}
+
+/* 結果容器 */
+.results-container {
+    overflow-x: auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 /* 表格樣式 */
 #results-table {
-    border: 1px solid #ddd;
     min-width: 800px;
+    margin-bottom: 0;
 }
 
 #results-table th {
@@ -58,22 +56,30 @@ html, body {
     top: 0;
     background-color: #f5f5f5;
     z-index: 10;
+    white-space: nowrap;
 }
 
-/* 表格容器 - 處理表格過寬的情況 */
-#results-section {
-    overflow-x: auto;
+#results-table td {
+    vertical-align: middle;
 }
 
 /* 狀態樣式 */
 .status-viewing {
     color: #e67e22;
     font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    background-color: #fff3cd;
+    border-radius: 4px;
+    display: inline-block;
 }
 
 .status-completed {
     color: #27ae60;
     font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    background-color: #d4edda;
+    border-radius: 4px;
+    display: inline-block;
 }
 
 /* 護理師已知曉狀態 */
@@ -81,6 +87,7 @@ html, body {
     width: 20px;
     height: 20px;
     cursor: pointer;
+    transform: scale(1.2);
 }
 
 /* 操作按鈕 */
@@ -88,6 +95,7 @@ html, body {
     padding: 0.5rem 0.75rem;
     margin: 0 0.25rem;
     font-size: 0.9rem;
+    border-radius: 4px;
 }
 
 .delete-button {
@@ -103,6 +111,8 @@ html, body {
     margin-bottom: 1.5rem;
     max-height: 300px;
     overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
 }
 
 .email-item {
@@ -110,9 +120,11 @@ html, body {
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem;
-    border: 1px solid #eee;
-    margin-bottom: 0.5rem;
-    border-radius: 4px;
+    border-bottom: 1px solid #eee;
+}
+
+.email-item:last-child {
+    border-bottom: none;
 }
 
 .email-actions {
@@ -124,6 +136,7 @@ html, body {
     margin-bottom: 0;
     margin-right: 0.5rem;
     width: auto;
+    padding: 0.4rem;
 }
 
 .remove-email {
@@ -147,7 +160,43 @@ html, body {
     width: auto;
 }
 
-/* 響應式 */
+/* 無結果時的顯示 */
+.no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    color: #6c757d;
+}
+
+.no-results-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #adb5bd;
+}
+
+.no-results h3 {
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.reload-button {
+    background: none;
+    border: none;
+    color: #4a89dc;
+    text-decoration: underline;
+    padding: 0;
+    cursor: pointer;
+    display: inline;
+    font-size: inherit;
+}
+
+.reload-button:hover {
+    color: #3b7dd8;
+    background: none;
+}
+
+/* 響應式調整 */
 @media screen and (max-width: 768px) {
     .results-header {
         flex-direction: column;
@@ -169,5 +218,9 @@ html, body {
     .email-form input {
         margin-right: 0;
         margin-bottom: 0.5rem;
+    }
+    
+    .email-actions {
+        flex-wrap: wrap;
     }
 }
