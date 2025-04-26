@@ -1,3 +1,4 @@
+// @charset "UTF-8";
 // GitHub API 數據存儲
 
 // 檔案路徑
@@ -15,6 +16,32 @@ let dataCache = {
     results: { data: null, timestamp: 0 },
     emails: { data: null, timestamp: 0 }
 };
+
+// 幫助處理 UTF-8 字符串的 Base64 編碼/解碼
+function utf8ToBase64(str) {
+    try {
+        return btoa(unescape(encodeURIComponent(str)));
+    } catch (e) {
+        console.error('UTF-8 轉 Base64 失敗:', e);
+        // 嘗試直接編碼作為後備方案
+        return btoa(str);
+    }
+}
+
+function base64ToUtf8(str) {
+    try {
+        return decodeURIComponent(escape(atob(str)));
+    } catch (e) {
+        console.error('Base64 轉 UTF-8 失敗:', e);
+        try {
+            // 嘗試直接解碼作為後備方案
+            return atob(str);
+        } catch (innerError) {
+            console.error('直接解碼也失敗:', innerError);
+            return ''; // 返回空字符串作為最後手段
+        }
+    }
+}
 
 // 初始化 GitHub 儲存
 async function initializeGitHubStorage() {
@@ -47,7 +74,7 @@ async function readGitHubFile(filename) {
     
     try {
         // 獲取 Token - 使用 getStoredToken 函數從 github-auth.js 獲取
-        const token = getStoredToken();
+        const token = typeof getStoredToken === 'function' ? getStoredToken() : localStorage.getItem('github_token');
         if (!token) {
             throw new Error('需要 GitHub Token 才能讀取檔案');
         }
@@ -82,7 +109,8 @@ async function readGitHubFile(filename) {
         const fileData = await response.json();
         let content;
         try {
-            content = atob(fileData.content); // Base64 解碼
+            // 使用改進的 Base64 解碼處理中文
+            content = base64ToUtf8(fileData.content);
         } catch (error) {
             console.error('Base64 解碼失敗:', error);
             content = '[]'; // 使用空陣列作為備用
@@ -93,6 +121,7 @@ async function readGitHubFile(filename) {
             data = JSON.parse(content);
         } catch (error) {
             console.error('JSON 解析失敗:', error);
+            console.log('嘗試解析的內容:', content);
             data = initializeDefaultData(filename);
         }
         
@@ -114,14 +143,15 @@ async function readGitHubFile(filename) {
 async function updateGitHubFile(filename, data) {
     try {
         // 獲取 Token - 使用 getStoredToken 函數從 github-auth.js 獲取
-        const token = getStoredToken();
+        const token = typeof getStoredToken === 'function' ? getStoredToken() : localStorage.getItem('github_token');
         if (!token) {
             throw new Error('需要 GitHub Token 才能更新檔案');
         }
         
         const cacheKey = filename.replace('.json', '');
         const content = JSON.stringify(data, null, 2);
-        const contentEncoded = btoa(unescape(encodeURIComponent(content))); // 處理 UTF-8 編碼
+        // 使用改進的 Base64 編碼處理中文
+        const contentEncoded = utf8ToBase64(content);
         
         // 獲取檔案 SHA
         let sha = null;
@@ -495,11 +525,19 @@ function exportAllData() {
         linkElement.setAttribute('download', exportFileDefaultName);
         linkElement.click();
         
-        showNotification('資料匯出成功', 'success');
+        if (typeof showNotification === 'function') {
+            showNotification('資料匯出成功', 'success');
+        } else {
+            alert('資料匯出成功');
+        }
     })
     .catch(error => {
         console.error('匯出數據時發生錯誤:', error);
-        showNotification('匯出數據時發生錯誤: ' + error.message, 'error');
+        if (typeof showNotification === 'function') {
+            showNotification('匯出數據時發生錯誤: ' + error.message, 'error');
+        } else {
+            alert('匯出數據時發生錯誤: ' + error.message);
+        }
     });
 }
 
@@ -546,11 +584,19 @@ async function importAllData(jsonData) {
         // 清除緩存
         invalidateCache();
         
-        showNotification('資料匯入成功: ' + importSummary.join(', '), 'success');
+        if (typeof showNotification === 'function') {
+            showNotification('資料匯入成功: ' + importSummary.join(', '), 'success');
+        } else {
+            alert('資料匯入成功: ' + importSummary.join(', '));
+        }
         return true;
     } catch (error) {
         console.error('匯入數據時發生錯誤:', error);
-        showNotification('匯入數據時發生錯誤: ' + error.message, 'error');
+        if (typeof showNotification === 'function') {
+            showNotification('匯入數據時發生錯誤: ' + error.message, 'error');
+        } else {
+            alert('匯入數據時發生錯誤: ' + error.message);
+        }
         throw error;
     }
 }
@@ -570,7 +616,7 @@ function invalidateCache() {
 // 檢查是否已初始化儲存庫結構
 async function checkRepositoryStructure() {
     try {
-        const token = getStoredToken();
+        const token = typeof getStoredToken === 'function' ? getStoredToken() : localStorage.getItem('github_token');
         if (!token) {
             return { initialized: false, error: '未提供 GitHub Token' };
         }
@@ -626,7 +672,7 @@ async function checkRepositoryStructure() {
 // 檢查檔案是否存在
 async function checkFileExists(filename) {
     try {
-        const token = getStoredToken();
+        const token = typeof getStoredToken === 'function' ? getStoredToken() : localStorage.getItem('github_token');
         const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_PATH}/${filename}`, {
             headers: {
                 'Authorization': `token ${token}`,
@@ -644,7 +690,7 @@ async function checkFileExists(filename) {
 // 創建資料目錄
 async function createDataDirectory() {
     try {
-        const token = getStoredToken();
+        const token = typeof getStoredToken === 'function' ? getStoredToken() : localStorage.getItem('github_token');
         if (!token) {
             throw new Error('未提供 GitHub Token');
         }
@@ -652,7 +698,7 @@ async function createDataDirectory() {
         // GitHub API 不直接支援創建空目錄
         // 所以我們創建一個 .gitkeep 檔案在目錄中
         const content = '# 此檔案用於維持資料目錄結構\n';
-        const contentEncoded = btoa(content);
+        const contentEncoded = utf8ToBase64(content);
         
         const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_PATH}/.gitkeep`, {
             method: 'PUT',
@@ -723,3 +769,50 @@ async function initializeRepositoryStructure() {
         return { success: false, message: '初始化儲存庫結構時發生錯誤: ' + error.message };
     }
 }
+// 調試輔助功能
+function debugStorage() {
+    console.group('GitHub 儲存調試信息');
+    console.log('緩存狀態:', {
+        topics: dataCache.topics.data ? '已緩存' : '未緩存',
+        questionnaires: dataCache.questionnaires.data ? '已緩存' : '未緩存',
+        results: dataCache.results.data ? '已緩存' : '未緩存',
+        emails: dataCache.emails.data ? '已緩存' : '未緩存'
+    });
+    console.log('GitHub 倉庫:', `${GITHUB_USERNAME}/${GITHUB_REPO}`);
+    console.log('數據目錄:', DATA_PATH);
+    console.groupEnd();
+}
+
+// 確保全局可訪問性
+window.initializeGitHubStorage = initializeGitHubStorage;
+window.getAllTopics = getAllTopics;
+window.updateTopics = updateTopics;
+window.getQuestionnaire = getQuestionnaire;
+window.updateQuestionnaire = updateQuestionnaire;
+window.getAllResults = getAllResults;
+window.addResult = addResult;
+window.deleteResult = deleteResult;
+window.updateNurseAcknowledged = updateNurseAcknowledged;
+window.getEmailList = getEmailList;
+window.updateEmailList = updateEmailList;
+window.sendNotificationEmail = sendNotificationEmail;
+window.exportAllData = exportAllData;
+window.importAllData = importAllData;
+window.invalidateCache = invalidateCache;
+window.initializeRepositoryStructure = initializeRepositoryStructure;
+window.debugStorage = debugStorage;
+
+// 在頁面載入時自動檢查 GitHub 使用者名稱和倉庫名稱
+document.addEventListener('DOMContentLoaded', function() {
+    // 檢查全局變量是否已定義
+    if (typeof GITHUB_USERNAME === 'undefined' || GITHUB_USERNAME === 'YOUR_GITHUB_USERNAME') {
+        console.warn('警告: GITHUB_USERNAME 未設定或使用預設值');
+    }
+    
+    if (typeof GITHUB_REPO === 'undefined' || GITHUB_REPO === 'healthcare-education') {
+        console.warn('提示: 使用預設倉庫名稱 "healthcare-education"');
+    }
+    
+    // 初始化檢查
+    debugStorage();
+});
