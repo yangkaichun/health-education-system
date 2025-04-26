@@ -9,13 +9,14 @@ const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
 // 預設的 GitHub Token - 直接內建在代碼中
 const DEFAULT_TOKEN = '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';
 
-// 頁面載入時初始化認證
-document.addEventListener('DOMContentLoaded', initializeAuth);
-
-// 初始化認證
-function initializeAuth() {
-    console.log('Initializing GitHub authentication...');
+// 確保字符串使用相同的編碼
+document.addEventListener('DOMContentLoaded', function() {
+    // 確保編碼一致性
+    document.querySelector('meta[charset]').setAttribute('charset', 'UTF-8');
     
+    // 初始化認證
+    initializeAuth();
+});
     // 設置認證相關事件監聽
     setupAuthListeners();
     
@@ -487,3 +488,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+// 在 github-auth.js 的底部添加
+// 確保這些變量全局可用
+window.GITHUB_USERNAME = GITHUB_USERNAME;
+window.GITHUB_REPO = GITHUB_REPO;
+window.getStoredToken = getStoredToken;
+window.isUserAuthenticated = isUserAuthenticated;
+window.showNotification = showNotification;
