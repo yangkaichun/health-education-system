@@ -46,7 +46,7 @@ async function readGitHubFile(filename) {
     }
     
     try {
-        // 獲取 Token
+        // 獲取 Token - 使用 getStoredToken 函數從 github-auth.js 獲取
         const token = getStoredToken();
         if (!token) {
             throw new Error('需要 GitHub Token 才能讀取檔案');
@@ -113,7 +113,7 @@ async function readGitHubFile(filename) {
 // 更新 GitHub 檔案
 async function updateGitHubFile(filename, data) {
     try {
-        // 獲取 Token
+        // 獲取 Token - 使用 getStoredToken 函數從 github-auth.js 獲取
         const token = getStoredToken();
         if (!token) {
             throw new Error('需要 GitHub Token 才能更新檔案');
@@ -458,6 +458,9 @@ async function sendNotificationEmail(result) {
         } else {
             console.log('[模擬] 沒有啟用的 Email 地址可以通知');
         }
+        
+        // 在實際應用中，這裡應該使用 Email 服務 API 發送郵件
+        // 例如：SendGrid, Mailgun, AWS SES 等
         
         return true;
     } catch (error) {
