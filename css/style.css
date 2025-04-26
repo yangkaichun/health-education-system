@@ -1,4 +1,406 @@
-/* 添加到 style.css - GitHub 認證和通知樣式 */
+/* 全局重置和基本樣式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    font-family: 'Microsoft JhengHei UI', 'PingFang TC', 'Noto Sans TC', 'Segoe UI', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9fa;
+    width: 100%;
+    height: 100%;
+}
+
+/* 頁面加載指示器 */
+.page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.page-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(74, 137, 220, 0.3);
+    border-radius: 50%;
+    border-top-color: #4a89dc;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.loader-text {
+    font-size: 1.2rem;
+    color: #4a89dc;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 系統消息 */
+.system-messages {
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    position: relative;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    position: relative;
+}
+
+.warning-message {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    position: relative;
+}
+
+.info-message {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    position: relative;
+}
+
+.close-message {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.close-message:hover {
+    opacity: 1;
+}
+
+/* 頁面佈局 */
+header {
+    background-color: #4a89dc;
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+}
+
+nav ul li {
+    margin-right: 1.5rem;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s;
+}
+
+nav ul li a:hover, 
+nav ul li a.active {
+    border-color: white;
+}
+
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    color: #4a89dc;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+h3 {
+    color: #5a6772;
+    margin-bottom: 1rem;
+}
+
+button {
+    background-color: #4a89dc;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #3b7dd8;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* 按鈕樣式 */
+.primary-button {
+    background-color: #4a89dc;
+    color: white;
+}
+
+.primary-button:hover {
+    background-color: #3b7dd8;
+}
+
+.secondary-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.secondary-button:hover {
+    background-color: #5a6268;
+}
+
+.action-button {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+}
+
+/* 表格樣式 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+table tr:hover {
+    background-color: #f5f8ff;
+}
+
+.loading-message {
+    text-align: center;
+    padding: 1rem;
+    color: #6c757d;
+}
+
+/* 載入指示器 */
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    color: #6c757d;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(74, 137, 220, 0.3);
+    border-radius: 50%;
+    border-top-color: #4a89dc;
+    animation: spin 1s linear infinite;
+    margin-right: 1rem;
+}
+
+.spinner.small {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+    margin-right: 0.5rem;
+}
+
+/* 模態對話框 */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.wide-modal {
+    max-width: 800px;
+}
+
+.close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #aaa;
+    transition: color 0.3s;
+}
+
+.close:hover {
+    color: #333;
+}
+
+/* 表單樣式 */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.form-help {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-left: 3px solid #4a89dc;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* 通知樣式 */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 350px;
+}
+
+.notification {
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-icon {
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+
+.notification-message {
+    flex: 1;
+}
+
+.notification-success {
+    border-left: 4px solid #28a745;
+}
+
+.notification-error {
+    border-left: 4px solid #dc3545;
+}
+
+.notification-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.notification-info {
+    border-left: 4px solid #17a2b8;
+}
 
 /* GitHub 認證樣式 */
 #github-auth {
@@ -99,86 +501,69 @@
     50% { opacity: 0.5; }
 }
 
-/* 通知樣式 */
-.notification-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    max-width: 350px;
+/* 頁尾樣式 */
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: #f5f5f5;
+    color: #666;
+    border-top: 1px solid #ddd;
+    margin-top: 2rem;
 }
 
-.notification {
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-    margin-bottom: 10px;
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    transform: translateX(120%);
-    transition: transform 0.3s ease;
+/* 響應式設計 */
+@media screen and (max-width: 768px) {
+    header {
+        padding: 1rem;
+    }
+    
+    header h1 {
+        font-size: 1.5rem;
+    }
+    
+    nav ul {
+        flex-direction: column;
+    }
+    
+    nav ul li {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    section {
+        padding: 1.5rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+    
+    .form-buttons {
+        flex-direction: column;
+    }
+    
+    .form-buttons button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
 }
 
-.notification.show {
-    transform: translateX(0);
-}
-
-.notification-icon {
-    font-size: 1.2rem;
-    margin-right: 10px;
-}
-
-.notification-message {
-    flex: 1;
-}
-
-.notification-success {
-    border-left: 4px solid #28a745;
-}
-
-.notification-error {
-    border-left: 4px solid #dc3545;
-}
-
-.notification-warning {
-    border-left: 4px solid #ffc107;
-}
-
-.notification-info {
-    border-left: 4px solid #17a2b8;
-}
-
-/* 載入指示器 */
-.loading-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(74, 137, 220, 0.3);
-    border-radius: 50%;
-    border-top-color: #4a89dc;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-}
-
-.spinner.small {
-    width: 16px;
-    height: 16px;
-    border-width: 2px;
-    margin: 0 0.5rem 0 0;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.loading-text {
-    color: #6c757d;
+@media screen and (max-width: 480px) {
+    main {
+        padding: 0 1rem;
+    }
+    
+    header h1 {
+        font-size: 1.3rem;
+    }
+    
+    button {
+        padding: 0.6rem 1.2rem;
+    }
+    
+    table th, table td {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
 }
