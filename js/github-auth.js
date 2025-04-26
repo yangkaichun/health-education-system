@@ -5,10 +5,27 @@ let isAuthenticated = false;
 const GITHUB_TOKEN_KEY = 'github_token';
 const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
 const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
-
+const API_SERVER_URL = 'https://yangkaichun.github.io/health-education-system/'; 
 // 預設的 GitHub Token - 直接內建在代碼中
 //const DEFAULT_TOKEN = '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';
 //const DEFAULT_TOKEN = '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';
+
+async function fetchGitHubContents() {
+  try {
+    const response = await fetch(`${API_SERVER_URL}/github/contents`);
+    const data = await response.json();
+    console.log('GitHub contents:', data);
+    // 處理資料
+  } catch (error) {
+    console.error('Error fetching GitHub contents:', error);
+  }
+}
+
+fetchGitHubContents();
+
+
+
+
 // 頁面載入時初始化認證
 document.addEventListener('DOMContentLoaded', initializeAuth);
 
