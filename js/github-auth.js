@@ -8,8 +8,6 @@ const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
 const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
 //const API_SERVER_URL = 'https://yangkaichun.github.io/health-education-system/'; 
 //const API_SERVER_URL = 'http://localhost:3001'; 
-
-
 // 預設的 GitHub Token - 直接內建在代碼中
 //const DEFAULT_TOKEN = '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';
 const DEFAULT_TOKEN = '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';
