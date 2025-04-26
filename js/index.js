@@ -1,17 +1,33 @@
 // 衛教影片觀看頁面功能
 
+// 衛教影片觀看頁面功能
+
 let topics = [];
 let selectedTopic = null;
 let currentQuestionnaire = null;
+let isInitialized = false;
 
 // 當 GitHub API 認證完成時
 function onAuthenticated() {
+    // 避免重複初始化
+    if (isInitialized) return;
+    isInitialized = true;
+    
+    console.log("認證成功，初始化影片觀看頁面");
+    
     initializeGitHubStorage().then(success => {
         if (success) {
             loadTopics();
+        } else {
+            // 如果初始化存儲失敗，顯示錯誤
+            showNotification('初始化儲存失敗，請檢查 GitHub 連接', 'error');
         }
+    }).catch(error => {
+        console.error('初始化存儲錯誤:', error);
+        showNotification('初始化存儲時發生錯誤: ' + error.message, 'error');
     });
 }
+
 
 // 載入衛教主題
 async function loadTopics() {
