@@ -20,25 +20,86 @@
     </header>
 
     <main>
+        <!-- GitHub 認證區塊 -->
+        <section id="github-auth" style="display: none;">
+            <h2>GitHub 認證</h2>
+            <p>請輸入您的 GitHub 個人訪問令牌（Personal Access Token）以管理系統資料</p>
+            <div class="auth-form">
+                <input type="text" id="github-token" placeholder="輸入 GitHub Token">
+                <button id="auth-button">登入</button>
+            </div>
+            <div class="auth-help">
+                <p>如何獲取 GitHub Token:</p>
+                <ol>
+                    <li>登入 <a href="https://github.com/" target="_blank">GitHub</a></li>
+                    <li>點擊右上角頭像 → Settings → Developer settings</li>
+                    <li>選擇 Personal access tokens → Tokens (classic)</li>
+                    <li>點擊 "Generate new token"，設置名稱並選擇 "repo" 權限</li>
+                    <li>生成並複製 Token 後粘貼到上方輸入框</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- GitHub 連接狀態區塊 -->
+        <section id="github-status">
+            <div class="status-container">
+                <div id="connection-status" class="status-indicator">
+                    <span class="status-icon">⚫</span>
+                    <span class="status-text">檢查連接中...</span>
+                </div>
+                <div class="status-actions">
+                    <button id="check-connection">重新檢查連接</button>
+                    <button id="logout-github">登出</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 主題管理區塊 -->
         <section id="topics-management">
             <h2>衛教主題管理</h2>
+            <div class="filter-container">
+                <input type="text" id="topic-filter" placeholder="搜尋主題..." class="filter-input">
+                <select id="topic-status-filter" class="filter-select">
+                    <option value="all">全部主題</option>
+                    <option value="with-video">已設定影片</option>
+                    <option value="without-video">未設定影片</option>
+                    <option value="with-questions">已設定問卷</option>
+                    <option value="without-questions">未設定問卷</option>
+                </select>
+            </div>
             <div class="topics-container">
                 <table id="topics-table">
                     <thead>
                         <tr>
-                            <th>編號</th>
-                            <th>主題名稱</th>
-                            <th>YouTube URL</th>
-                            <th>問卷題數</th>
-                            <th>操作</th>
+                            <th width="5%">編號</th>
+                            <th width="30%">主題名稱</th>
+                            <th width="25%">YouTube URL</th>
+                            <th width="10%">問卷題數</th>
+                            <th width="30%">操作</th>
                         </tr>
                     </thead>
                     <tbody id="topics-body">
                         <!-- 將由 JavaScript 動態生成 -->
                     </tbody>
                 </table>
-                <button id="save-topics">儲存所有設定</button>
+                <div class="table-actions">
+                    <button id="save-topics" class="primary-button">儲存所有設定</button>
+                </div>
             </div>
+        </section>
+
+        <!-- 資料管理區塊 -->
+        <section id="data-management">
+            <h2>資料管理</h2>
+            <div class="data-actions">
+                <button id="export-data" class="action-button">匯出所有資料</button>
+                <div class="import-container">
+                    <input type="file" id="import-file" accept=".json" style="display: none;">
+                    <button id="import-data" class="action-button">匯入資料</button>
+                </div>
+                <button id="clear-cache" class="action-button secondary">清除快取</button>
+            </div>
+            <p class="data-info">匯出功能可將目前系統中的所有設定和資料備份為 JSON 檔案。匯入功能可從備份檔案還原所有設定和資料。</p>
         </section>
 
         <!-- 衛教主題編輯彈窗 -->
@@ -57,9 +118,15 @@
                     </div>
                     <div class="form-group">
                         <label for="topic-url">YouTube URL:</label>
-                        <input type="url" id="topic-url" required>
+                        <input type="url" id="topic-url" placeholder="例如: https://www.youtube.com/watch?v=XXXXXXXXXXX">
+                        <div class="url-preview" id="url-preview">
+                            <div class="preview-placeholder">預覽區域</div>
+                        </div>
                     </div>
-                    <button type="submit">儲存主題</button>
+                    <div class="form-buttons">
+                        <button type="button" id="cancel-topic-edit" class="secondary-button">取消</button>
+                        <button type="submit" class="primary-button">儲存主題</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -69,13 +136,24 @@
             <div class="modal-content wide-modal">
                 <span class="close">&times;</span>
                 <h3>編輯問卷 - <span id="current-topic-name"></span></h3>
-                <div id="questions-container">
-                    <!-- 將由 JavaScript 動態生成 -->
+                <div id="questionnaire-tabs">
+                    <button class="tab-button active" data-tab="questions-tab">問題內容</button>
+                    <button class="tab-button" data-tab="preview-tab">問卷預覽</button>
                 </div>
-                <div class="question-actions">
-                    <button id="add-yes-no">新增是非題</button>
-                    <button id="add-multiple-choice">新增選擇題</button>
-                    <button id="save-questionnaire">儲存問卷</button>
+                <div id="questions-tab" class="tab-content">
+                    <div id="questions-container">
+                        <!-- 將由 JavaScript 動態生成 -->
+                    </div>
+                    <div class="question-actions">
+                        <button id="add-yes-no" class="action-button">新增是非題</button>
+                        <button id="add-multiple-choice" class="action-button">新增選擇題</button>
+                        <button id="save-questionnaire" class="primary-button">儲存問卷</button>
+                    </div>
+                </div>
+                <div id="preview-tab" class="tab-content" style="display: none;">
+                    <div id="questionnaire-preview">
+                        <!-- 將由 JavaScript 動態生成 -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -85,26 +163,9 @@
         <p>&copy; 2025 衛教影片觀看系統</p>
     </footer>
 
-    <!-- Google API 相關
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://accounts.google.com/gsi/client"></script>
-     -->
     <!-- 自定義 JavaScript -->
-    <script src="js/auth.js"></script>
+    <script src="js/github-auth.js"></script>
     <script src="js/github-storage.js"></script>
     <script src="js/admin.js"></script>
-    <!-- 在管理設定區域添加 -->
-    <section id="data-management">
-        <h2>資料管理</h2>
-        <div class="data-actions">
-            <button id="export-data">匯出所有資料</button>
-            <div class="import-container">
-                <input type="file" id="import-file" accept=".json" style="display: none;">
-                <button id="import-data">匯入資料</button>
-            </div>
-        </div>
-        <p class="data-info">匯出功能可將目前系統中的所有設定和資料備份為 JSON 檔案。匯入功能可從備份檔案還原所有設定和資料。</p>
-    </section>
-</section>
 </body>
 </html>
