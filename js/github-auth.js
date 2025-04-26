@@ -7,7 +7,7 @@ const GITHUB_USERNAME = 'YOUR_GITHUB_USERNAME'; // 替換為您的 GitHub 用戶
 const GITHUB_REPO = 'healthcare-education'; // 替換為您的倉庫名稱
 
 // 預設的 GitHub Token - 直接內建在代碼中
-const DEFAULT_TOKEN = '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';
+const DEFAULT_TOKEN = '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';
 
 // 頁面載入時初始化認證
 document.addEventListener('DOMContentLoaded', initializeAuth);
