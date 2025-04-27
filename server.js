@@ -1,38 +1,28 @@
-// server.js
 import express from 'express';
-import axios from 'axios';
-import cors from 'cors';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
-dotenv.config();
+dotenv.config(); // 讀取 .env 環境變數
 const app = express();
-const PORT = 3001;
+const port = process.env.PORT || 3001;
 
-// 從 .env 檔案讀取 GitHub Token
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_USERNAME = 'yangkaichun';
-const GITHUB_REPO = 'health-education-system';
+// CORS 安全設定（可設定只開放給你的網域）
+app.use(cors({
+    origin: ['https://yangkaichun.github.io/health-education-system/', 'http://localhost:3000'],
+    credentials: true
+}));
 
-app.use(cors());
-app.use(express.json());
+// API: 提供 GitHub Token
+app.get('/api/github-token', (req, res) => {
+    const token = process.env.GITHUB_TOKEN;
+    if (!token) {
+        return res.status(500).json({ error: 'GitHub Token 未設定' });
+    }
 
-// 建一個 API，讓前端來叫
-app.get('/github/contents', async (req, res) => {
-  try {
-    const githubRes = await axios.get(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents`, {
-      headers: {
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
-        Accept: 'application/vnd.github+json',
-      }
-    });
-
-    res.json(githubRes.data);
-  } catch (error) {
-    console.error('Error fetching GitHub contents:', error.message);
-    res.status(500).send('Failed to fetch data from GitHub');
-  }
+    // 可額外做安全檢查，例如驗證 session、JWT 等
+    res.json({ token });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`API server running on http://localhost:${port}`);
 });
