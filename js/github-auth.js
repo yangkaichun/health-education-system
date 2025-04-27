@@ -17,7 +17,7 @@ const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
 
 
 // 預設的 GitHub Token - 直接內建在代碼中
-const DEFAULT_TOKEN = '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';
+//const DEFAULT_TOKEN = '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';
 
 // 頁面載入時初始化認證
 document.addEventListener('DOMContentLoaded', initializeAuth);
