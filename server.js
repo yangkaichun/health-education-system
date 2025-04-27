@@ -1,28 +1,47 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import fetch from 'node-fetch';
 
-dotenv.config(); // 讀取 .env 環境變數
+dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_USERNAME = 'yangkaichun'; // 根據你原本前端設定
+const GITHUB_REPO = 'health-education-system';
 
-// CORS 安全設定（可設定只開放給你的網域）
 app.use(cors({
-    origin: ['https://yangkaichun.github.io/health-education-system/', 'http://localhost:3000'],
+    origin: ['https://yangkaichun.github.io/health-education-system', 'http://localhost:3000'],
     credentials: true
 }));
 
-// API: 提供 GitHub Token
-app.get('/api/github-token', (req, res) => {
-    const token = process.env.GITHUB_TOKEN;
-    if (!token) {
-        return res.status(500).json({ error: 'GitHub Token 未設定' });
-    }
+// 代理：前端呼叫這裡，後端幫忙去 GitHub API 取資料
+app.get('/api/github-repo', async (req, res) => {
+    try {
+        const githubApiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}`;
+        
+        const response = await fetch(githubApiUrl, {
+            headers: {
+                Authorization: `token ${GITHUB_TOKEN}`,
+                Accept: 'application/vnd.github.v3+json'
+            }
+        });
 
-    // 可額外做安全檢查，例如驗證 session、JWT 等
-    res.json({ token });
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('GitHub API error:', errorData);
+            return res.status(response.status).json({ error: errorData });
+        }
+
+        const data = await response.json();
+        res.json(data);
+
+    } catch (error) {
+        console.error('Proxy error:', error);
+        res.status(500).json({ error: 'Proxy server error' });
+    }
 });
 
 app.listen(port, () => {
-    console.log(`API server running on http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
 });
