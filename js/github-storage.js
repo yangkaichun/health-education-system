@@ -1,8 +1,6 @@
-@charset "UTF-8";
+// @charset "UTF-8";
 // GitHub API 數據存儲
-//const GITHUB_TOKEN_KEY = 'github_token';
-//const GITHUB_USERNAME = 'yangkaichun'; // 替換為您的 GitHub 用戶名
-//const GITHUB_REPO = 'health-education-system'; // 替換為您的倉庫名稱
+
 // 檔案路徑
 const DATA_PATH = 'data';
 const TOPICS_FILE = 'topics.json';
