@@ -114,26 +114,28 @@ async function initializeAuth() {
     // 驗證 Token 是否有效
     validateToken(token)
         .then(valid => {
-            if (valid) {
+                 if (valid) {
                 // Token 有效，完成認證
                 console.log('Token is valid, completing authentication');
                 completeAuthentication(token);
-            } else {
+                            } else 
+                          {
                 // 如果是預設 Token 且無效，表示可能需要更新
-                if (token === DEFAULT_TOKEN) {
+                            if (token === DEFAULT_TOKEN)
+                               {
                     console.error('Default token is invalid, update required');
                     showError('預設的 GitHub Token 已失效，請聯繫系統管理員更新。');
-                }
-                // 顯示認證表單
-                console.log('Token is invalid, showing auth form');
-                showAuthForm();
-            }
-        })
+                               }
+                // 顯示   認證表單
+                       console.log('Token is invalid, showing auth form');
+                      showAuthForm();
+                           }
+                             })
         .catch(error => {
             console.error('Token validation failed:', error);
             showAuthForm();
-        });
-}
+                        });
+
 
 // 設置認證相關事件監聽
 function setupAuthListeners() {
