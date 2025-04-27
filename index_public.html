@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>衛教影片觀看</title>
+    <!-- 確保 CSS 路徑正確且按正確順序載入 -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index.css">
+    <!-- 預加載關鍵資源 -->
+    <link rel="preload" href="js/github-auth.js" as="script">
+    <link rel="preload" href="js/github-storage.js" as="script">
+</head>
+<body>
+    <!-- 頁面加載指示器 -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">正在載入...</div>
+    </div>
+
+    <header>
+        <h1>衛教影片觀看系統</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="active">影片觀看</a></li>
+        <!--           <li><a href="results.html">結果列表</a></li>
+                <li><a href="admin.html">管理設定</a></li>  頁面加載指示器 -->  
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- 系統訊息區域 -->
+        <div id="system-messages" class="system-messages">
+            <!-- 錯誤和狀態消息將顯示在這裡 -->
+        </div>
+        
+        <section id="qrcode-section">
+            <div class="input-group">
+                <input type="text" id="qrcode-result" placeholder="請掃描 QR Code" >
+                <button id="scan-button">掃描 QR Code</button>
+            </div>
+            <div id="qrcode-scanner" style="display: none;">
+                <video id="preview"></video>
+                <button id="close-scanner">關閉掃描器</button>
+            </div>
+        </section>
+
+        <section id="topic-selection">
+            <h2>請選擇衛教主題</h2>
+            <div class="topic-grid" id="topic-list">
+                <!-- 將由 JavaScript 動態生成 -->
+            </div>
+            <button id="submit-topic" disabled>送出</button>
+        </section>
+
+        <section id="video-section" style="display: none;">
+            <h2 id="video-title">衛教影片</h2>
+            <div class="video-container">
+                <video id="education-video" controls>
+                    <source src="" type="video/mp4">
+                    您的瀏覽器不支援影片播放。
+                </video>
+            </div>
+            <button id="replay-video">重播影片</button>
+            <div id="questionnaire-section" style="display: none;">
+                <h3>問卷填寫</h3>
+                <form id="questionnaire-form">
+                    <!-- 將由 JavaScript 動態生成 -->
+                </form>
+                <button id="submit-questionnaire">送出問卷</button>
+            </div>
+        </section>
+
+        <div id="completion-message" style="display: none;">
+            <h3>已將問卷填畢，將通知護理師與您說明。</h3>
+            <button id="return-home">返回主頁</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 衛教影片觀看系統(By 楊凱鈞/FET)</p>
+       <p>  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 </p>
+    </footer>
+
+    <!-- 先加載外部庫 -->
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    
+    <!-- 修正順序：先加載認證和存儲腳本 -->
+    <script src="js/github-auth.js"></script>
+    <script src="js/github-storage.js"></script>
+    
+    <!-- 再加載頁面特定腳本 -->
+    <script src="js/qrcode.js"></script>
+    <script src="js/video-player.js"></script>
+    <script src="js/index.js"></script>
+    
+    <script>
+        // 頁面加載完成後隱藏加載指示器
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const loader = document.getElementById('page-loader');
+                if (loader) {
+                    loader.classList.add('hidden');
+                    setTimeout(function() {
+                        loader.remove();
+                    }, 300);
+                }
+            }, 500);
+        });
+        
+        // 添加全局錯誤處理
+        window.addEventListener('error', function(event) {
+            console.error('全局錯誤:', event.message, event.filename, event.lineno);
+            
+            // 顯示友好錯誤訊息
+            const systemMessages = document.getElementById('system-messages');
+            if (systemMessages) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'error-message';
+                errorMsg.innerHTML = `
+                    <strong>發生錯誤:</strong> 
+                    系統運行時遇到問題。如果問題持續存在，請聯繫管理員。
+                    <button onclick="this.parentNode.remove();" class="close-message">關閉</button>
+                `;
+                systemMessages.appendChild(errorMsg);
+            }
+        });
+    </script>
+</body>
+</html>
