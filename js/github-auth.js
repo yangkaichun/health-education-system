@@ -275,23 +275,8 @@ async function checkGitHubConnection() {
         if (connectionStatusEl) {
             showConnectionStatus('檢查中...', 'loading');
         }
-        
-        const token = localStorage.getItem(GITHUB_TOKEN_KEY) || DEFAULT_TOKEN;
-        
-        if (!token) {
-            if (connectionStatusEl) {
-                showConnectionStatus('未認證', 'error');
-            }
-            return { connected: false, error: '尚未提供 GitHub Token' };
-        }
-        
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}`, {
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        
+
+        const response = await fetch('/api/github-repo'); // 直接問自己後端
         if (response.ok) {
             const repoData = await response.json();
             if (connectionStatusEl) {
@@ -326,7 +311,6 @@ async function checkGitHubConnection() {
         };
     }
 }
-
 // 顯示 GitHub 連接狀態
 function showConnectionStatus(message, status) {
     const statusElement = document.getElementById('connection-status');
