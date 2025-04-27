@@ -141,5 +141,16 @@
     "maxScore": 12,
     "nurseAcknowledged": false,
     "timestamp": "2025-04-27T12:51:28.375Z"
+  },
+  {
+    "id": "1745760307482",
+    "qrCode": "7011",
+    "topicId": 2,
+    "topicName": "化學治療的簡介(APT)",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-27T13:25:07.482Z"
   }
 ]
