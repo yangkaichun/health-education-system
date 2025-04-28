@@ -65,8 +65,8 @@ function startScanner() {
         Instascan.Camera.getCameras()
             .then(function(cameras) {
                 if (cameras.length > 0) {
-                    // 在行動裝置上優先使用後置相機
-                    let selectedCamera = cameras[0]; // 預設前置相機
+                    // 在行動裝置上優先使用前置相機
+                    let selectedCamera = cameras[1]; // 預設前置相機
                     
                     // 找尋後置相機
                     for (let camera of cameras) {
