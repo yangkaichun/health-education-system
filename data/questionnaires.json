@@ -63,15 +63,21 @@
     "questions": [
       {
         "type": "yesno",
-        "text": "化學藥物是抑制癌細胞的分裂或破壞腫瘤的生長，達到治療及控制癌症",
+        "text": "化學藥物是抑制癌細胞的分裂或破壞腫瘤的生長，達到治療及控制癌症?",
         "correctAnswer": "是",
-        "score": 20
+        "score": 10
       },
       {
         "type": "yesno",
-        "text": "化學治療跟放射治療是可以同時執行的",
+        "text": "化學治療跟放射治療是可以同時執行的?",
         "correctAnswer": "是",
-        "score": 30
+        "score": 10
+      },
+      {
+        "type": "yesno",
+        "text": "化學治療可以縮小腫瘤體積?",
+        "correctAnswer": "是",
+        "score": 20
       },
       {
         "type": "choice",
@@ -83,7 +89,31 @@
           "以上皆是"
         ],
         "correctOptionIndex": 3,
-        "score": 50
+        "score": 20
+      },
+      {
+        "type": "choice",
+        "text": "化學治療的途徑有?",
+        "options": [
+          "靜脈注射",
+          "口服",
+          "皮下",
+          "以上皆是"
+        ],
+        "correctOptionIndex": 3,
+        "score": 20
+      },
+      {
+        "type": "choice",
+        "text": "對於化學治療的療程，以下哪項敘述是錯誤的?",
+        "options": [
+          "醫師會依據罹患腫瘤的種類、生長部位、分期、大小、對藥物 的反應等，來決定治療時間。",
+          "化療會一直持續不間斷，中間沒有休息時間",
+          "化療中間會有休息時間，以利受損的正常細胞修復",
+          "化療中間的休息時間，是為了讓身體抵抗力變好，以應付下一 次的化療"
+        ],
+        "correctOptionIndex": 1,
+        "score": 20
       }
     ]
   },
