@@ -70,7 +70,8 @@ function startScanner() {
                  
                     // 找尋後置相機
                     for (let camera of cameras) {
-                        if (!camera.name.toLowerCase().includes('front')) {
+               //         if (!camera.name.toLowerCase().includes('front')) {
+                        if (!camera.name.toLowerCase().includes('back')) {       //手機優先後置相機
                           selectedCamera = camera;
                           break;
                       }
