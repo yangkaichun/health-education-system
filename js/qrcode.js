@@ -66,66 +66,16 @@ function startScanner() {
             .then(function(cameras) {
                 if (cameras.length > 0) {
                     // 在行動裝置上優先使用前置相機
-//--                    let selectedCamera = cameras[0]; // 預設前置相機
-                    let selectedCamera = null; // 先不預設任何相機
+                   let selectedCamera = cameras[0]; // 預設前置相機
+                 
                     // 找尋後置相機
-//--                    for (let camera of cameras) {
-//--                        if (!camera.name.toLowerCase().includes('front')) {
-//--                            selectedCamera = camera;
-//--                            break;
-//--                        }
-//--                    }
-
-for (let camera of cameras) {
-                // 檢查相機名稱是否不包含 'front'，且可能包含 'back' 或 'environment'
-                if (!camera.name.toLowerCase().includes('front') ||
-                    camera.name.toLowerCase().includes('back') ||
-                    camera.name.toLowerCase().includes('environment')) {
-                    selectedCamera = camera; // 找到後置相機，優先選擇
-                    break; // 找到後置相機後就跳出迴圈
-                }
-            }
-
-            // 如果找到了後置相機，或者只有前置相機，則選擇第一個相機作為備用
-            if (selectedCamera === null && cameras.length > 0) {
-                selectedCamera = cameras[0]; // 如果沒有找到後置相機，則預設使用第一個相機
-            }
-
-            if (selectedCamera) {
-                // 在這裡使用 selectedCamera 啟動您的掃描器
-                // 假設您已經有一個 Instascan.Scanner 實例叫做 scanner
-                // 例如: scanner.start(selectedCamera);
-                console.log("Selected Camera:", selectedCamera.name); // 輸出選擇的相機名稱以便檢查
-                // 請在這裡加入您的 scanner.start(selectedCamera); 程式碼
-                // 例如:
-                // let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
-                // scanner.addListener('scan', function (content) {
-                //     console.log(content);
-                // });
-                // scanner.start(selectedCamera);
-
-            } else {
-                console.error('No cameras found.');
-                alert('找不到相機。');
-            }
-        } else {
-            console.error('No cameras found.');
-            alert('找不到相機。');
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    
+                    for (let camera of cameras) {
+                        if (!camera.name.toLowerCase().includes('front')) {
+                          selectedCamera = camera;
+                          break;
+                      }
+                   }
+                 
                     scanner.start(selectedCamera);
                 } else {
                     if (typeof showNotification === 'function') {
