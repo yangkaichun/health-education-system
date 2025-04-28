@@ -74,7 +74,7 @@ function switchCamera() {
 
     // 顯示通知
     if (typeof showNotification === 'function') {
-        showNotification('已切換到' + (availableCameras[currentCameraIndex].name.toLowerCase().includes('front') ? '前置' : '後置') + '相機', 'info');
+        showNotification('已切換到' + (availableCameras[currentCameraIndex].name.toLowerCase().includes('environment') ? '前置' : '後置') + '相機', 'info');
     }
 }
 
@@ -145,10 +145,10 @@ function startScanner() {
                         // 如果是行動裝置，嘗試尋找後置鏡頭
                         let backCameraFoundIndex = -1;
 
-                        // 優先尋找名稱中不包含 'front' 的相機
+                        // 優先尋找名稱中不包含 'environment' 的相機
                         for (let i = 0; i < cameras.length; i++) {
                             const cameraName = cameras[i].name.toLowerCase();
-                            if (!cameraName.includes('front')) {
+                            if (!cameraName.includes('environment')) {
                                 backCameraFoundIndex = i;
                                 break; // 找到第一個非前置鏡頭就停止
                             }
@@ -169,7 +169,7 @@ function startScanner() {
                          for (let i = 0; i < cameras.length; i++) {
                              const cameraName = cameras[i].name.toLowerCase();
                              if (cameraName.includes('back') ||
-                                 (cameraName.includes('camera') && !cameraName.includes('front')) ||
+                                 (cameraName.includes('camera') && !cameraName.includes('environment')) ||
                                  cameraName.includes('環境') ||
                                  cameraName.includes('後置')) {
                                  backCameraIndex = i;
