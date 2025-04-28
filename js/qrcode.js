@@ -261,7 +261,12 @@ function startScanner() {
             const resultInput = document.getElementById('qrcode-result');
             if (resultInput) {
                 resultInput.value = content;
+            document.getElementById('qrcode-result').value = content;
+    //掃描到欄位        
             }
+
+
+
             
             // 允許選擇主題
             const submitTopicBtn = document.getElementById('submit-topic');
@@ -274,6 +279,7 @@ function startScanner() {
                 stopScanner();
 
 
+     // 掃描到 QR Code 時的處理
 
 
 
