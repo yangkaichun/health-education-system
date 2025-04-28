@@ -63,40 +63,62 @@ function startScanner() {
         
         // 啟動相機
         Instascan.Camera.getCameras()
-    .then(function(cameras) {
-        if (cameras.length > 0) {
-            let selectedCamera = cameras[0]; // 預設第一個相機
-            
-            // 尋找後置相機 (名稱包含 'back')
-            let backCamera = cameras.find(camera => 
-                camera.name.toLowerCase().includes('back'));
+            .then(function(cameras) {
+                if (cameras.length > 0) {
+                    // 預設使用後置相機
+                    let selectedCamera = cameras[0]; // 先預設第一個相機
+                    
+                    // 方法1：嘗試從名稱識別後置相機
+                    // 在許多裝置上後置相機名稱可能包含 'back' 或不包含 'front'
+                    for (let i = 0; i < cameras.length; i++) {
+                        if (cameras[i].name.toLowerCase().includes('back') || 
+                            !cameras[i].name.toLowerCase().includes('front')) {
+                            selectedCamera = cameras[i];
+                            break;
+                        }
+                    }
+                    
+                    // 方法2：通常在手機上，後置相機是最後一個相機
+                    // 如果上面的方法沒找到，嘗試使用最後一個相機
+                    if (selectedCamera === cameras[0] && cameras.length > 1) {
+                        selectedCamera = cameras[cameras.length - 1];
+                    }
+                    
+                    console.log('選擇相機:', selectedCamera.name);
+                    scanner.start(selectedCamera);
+                } else {
+                    if (typeof showNotification === 'function') {
+                        showNotification('未找到相機設備！', 'error');
+                    } else {
+                        alert('未找到相機設備！');
+                    }
+                    scannerDiv.style.display = 'none';
+                }
+            })
+            .catch(function(error) {
+                console.error('Error accessing cameras:', error);
                 
-            // 如果找到後置相機，優先使用它
-            if (backCamera) {
-                selectedCamera = backCamera;
-            }
-            
-            scanner.start(selectedCamera);
-        } else {
-            if (typeof showNotification === 'function') {
-                showNotification('未找到相機設備！', 'error');
-            } else {
-                alert('未找到相機設備！');
-            }
-            scannerDiv.style.display = 'none';
-        }
-    })
-    .catch(function(error) {
-        console.error('Error accessing cameras:', error);
+                if (typeof showNotification === 'function') {
+                    showNotification('無法存取相機：' + error.message, 'error');
+                } else {
+                    alert('無法存取相機：' + error.message);
+                }
+                
+                scannerDiv.style.display = 'none';
+            });
+    } catch (error) {
+        console.error('啟動掃描器時發生錯誤:', error);
         
         if (typeof showNotification === 'function') {
-            showNotification('無法存取相機：' + error.message, 'error');
+            showNotification('啟動掃描器時發生錯誤: ' + error.message, 'error');
         } else {
-            alert('無法存取相機：' + error.message);
+            alert('啟動掃描器時發生錯誤: ' + error.message);
         }
         
         scannerDiv.style.display = 'none';
-    });
+    }
+}
+
 // 停止掃描器
 function stopScanner() {
     const scannerDiv = document.getElementById('qrcode-scanner');
