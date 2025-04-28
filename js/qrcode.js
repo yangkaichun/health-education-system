@@ -4,6 +4,7 @@
 let scanner = null;
 let currentCameraIndex = 0;
 let availableCameras = [];
+let iosConstraints = { facingMode: "environment" }; // iOS 後置相機約束預設值
 
 // 初始化 QR Code 掃描器
 function initQrScanner() {
@@ -59,44 +60,9 @@ function createSwitchCameraButton() {
     scannerDiv.appendChild(switchButton);
 }
 
-// 切換相機
-function switchCamera() {
-    if (!scanner || availableCameras.length <= 1) return;
-
-    // 切換到下一個相機
-    currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
-
-    // 停止當前相機
-    scanner.stop();
-
-    // 啟動新相機
-    scanner.start(availableCameras[currentCameraIndex]);
-
-    // 顯示通知
-    const cameraType = isFrontCamera(availableCameras[currentCameraIndex]) ? '前置' : '後置';
-    if (typeof showNotification === 'function') {
-        showNotification('已切換到' + cameraType + '相機', 'info');
-    }
-}
-
-// 判斷是否為前置相機
-function isFrontCamera(camera) {
-    if (!camera || !camera.name) return false;
-    
-    const cameraName = camera.name.toLowerCase();
-    return cameraName.includes('front') || 
-           cameraName.includes('user') || 
-           cameraName.includes('facetime');
-}
-
-// 判斷是否為後置相機
-function isBackCamera(camera) {
-    if (!camera || !camera.name) return false;
-    
-    const cameraName = camera.name.toLowerCase();
-    return cameraName.includes('back') || 
-           cameraName.includes('rear') || 
-           cameraName.includes('environment');
+// 判斷是否為 iOS 裝置
+function isIOSDevice() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
 }
 
 // 判斷是否為行動裝置
@@ -104,9 +70,96 @@ function isMobileDevice() {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
-// 判斷是否為 iOS 裝置
-function isIOSDevice() {
-    return /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+// 切換相機 - iOS 特定版本
+function switchCamera() {
+    if (!scanner) return;
+    
+    if (isIOSDevice()) {
+        // iOS 裝置特定處理
+        console.log('iOS 裝置: 當前相機模式:', iosConstraints.facingMode);
+        
+        // 切換 facingMode 來切換前後相機
+        if (iosConstraints.facingMode === "environment") {
+            iosConstraints.facingMode = "user"; // 切換至前置相機
+            console.log('iOS 裝置: 切換到前置相機');
+        } else {
+            iosConstraints.facingMode = "environment"; // 切換至後置相機
+            console.log('iOS 裝置: 切換到後置相機');
+        }
+        
+        // 停止當前相機
+        scanner.stop();
+        
+        // 重新啟動掃描器，用新的相機約束
+        startScannerWithConstraints(iosConstraints);
+        
+        // 顯示通知
+        const cameraType = (iosConstraints.facingMode === "user") ? '前置' : '後置';
+        if (typeof showNotification === 'function') {
+            showNotification('已切換到' + cameraType + '相機', 'info');
+        }
+    } else {
+        // 非 iOS 裝置使用原有方法
+        if (availableCameras.length <= 1) return;
+        
+        // 切換到下一個相機
+        currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
+        
+        // 停止當前相機
+        scanner.stop();
+        
+        // 啟動新相機
+        scanner.start(availableCameras[currentCameraIndex]);
+        
+        // 顯示通知
+        const cameraName = availableCameras[currentCameraIndex].name.toLowerCase();
+        const cameraType = (cameraName.includes('front') || cameraName.includes('user')) ? '前置' : '後置';
+        if (typeof showNotification === 'function') {
+            showNotification('已切換到' + cameraType + '相機', 'info');
+        }
+    }
+}
+
+// 使用指定相機約束啟動掃描器
+function startScannerWithConstraints(constraints) {
+    if (!scanner) {
+        console.error('掃描器尚未初始化');
+        return;
+    }
+    
+    const preview = document.getElementById('preview');
+    if (!preview) {
+        console.error('找不到預覽元素');
+        return;
+    }
+    
+    // 使用 getUserMedia 直接控制相機
+    navigator.mediaDevices.getUserMedia({
+        video: constraints,
+        audio: false
+    }).then(function(stream) {
+        // 將視訊流設定到預覽元素
+        if ('srcObject' in preview) {
+            preview.srcObject = stream;
+        } else {
+            // 舊版瀏覽器兼容
+            preview.src = URL.createObjectURL(stream);
+        }
+        
+        // 啟動掃描器
+        scanner.mirror = constraints.facingMode === "user";
+        scanner.stream = stream;
+        scanner.active = true;
+        
+        console.log('掃描器已啟動，使用相機模式:', constraints.facingMode);
+    }).catch(function(error) {
+        console.error('無法存取相機:', error);
+        if (typeof showNotification === 'function') {
+            showNotification('無法存取相機：' + error.message, 'error');
+        } else {
+            alert('無法存取相機：' + error.message);
+        }
+    });
 }
 
 // 啟動掃描器
@@ -132,7 +185,9 @@ function startScanner() {
         // 創建掃描器實例
         scanner = new Instascan.Scanner({
             video: preview,
-            mirror: false // 對行動裝置來說設為 false 較好
+            mirror: false, // 對行動裝置來說設為 false 較好
+            captureImage: false, // 提高效能
+            backgroundScan: false // 提高效能
         });
 
         // 掃描到 QR Code 時的處理
@@ -141,7 +196,10 @@ function startScanner() {
             stopScanner();
 
             // 允許選擇主題
-            document.getElementById('submit-topic').disabled = false;
+            const submitTopicBtn = document.getElementById('submit-topic');
+            if (submitTopicBtn) {
+                submitTopicBtn.disabled = false;
+            }
 
             // 顯示成功訊息
             if (typeof showNotification === 'function') {
@@ -151,52 +209,46 @@ function startScanner() {
             }
         });
 
-        // 啟動相機
+        // 檢查裝置類型並進行對應處理
+        if (isIOSDevice()) {
+            console.log('偵測到 iOS 裝置，使用特殊相機處理邏輯');
+            
+            // iOS 裝置預設使用後置相機 (environment)
+            iosConstraints = { facingMode: "environment" };
+            
+            // 使用自定義方法啟動掃描器
+            startScannerWithConstraints(iosConstraints);
+            
+            // 顯示切換相機按鈕
+            if (switchButton) {
+                switchButton.style.display = 'block';
+            }
+            
+            // 在 iOS 上不需要繼續執行下面的相機選擇邏輯
+            return;
+        }
+        
+        // 非 iOS 裝置的標準處理
         Instascan.Camera.getCameras()
             .then(function(cameras) {
                 if (cameras.length > 0) {
                     // 儲存所有可用相機
                     availableCameras = cameras;
-
-                    // 判斷是否為行動裝置
-                    const isMobile = isMobileDevice();
-                    const isIOS = isIOSDevice();
-                    console.log('是否為行動裝置:', isMobile);
-                    console.log('是否為iOS裝置:', isIOS);
+                    console.log('找到相機數量:', cameras.length);
                     console.log('相機列表:', cameras.map(c => c.name));
 
                     let selectedCameraIndex = 0; // 預設使用第一個相機
 
-                    if (isIOS) {
-                        // iOS 特定處理邏輯
-                        let backCameraIndex = -1;
-                        
-                        // 遍歷相機列表尋找後置相機
-                        for (let i = 0; i < cameras.length; i++) {
-                            // iOS 後置相機通常包含 "back" 或 "environment" 字眼
-                            if (isBackCamera(cameras[i])) {
-                                backCameraIndex = i;
-                                break;
-                            }
-                        }
-                        
-                        // 如果找到後置相機則使用，否則使用第一個相機
-                        if (backCameraIndex !== -1) {
-                            selectedCameraIndex = backCameraIndex;
-                            console.log('iOS裝置: 找到後置相機，使用索引:', selectedCameraIndex);
-                        } else {
-                            // 沒找到明確的後置相機，嘗試使用最後一個相機
-                            // 因為在某些 iOS 裝置上，後置相機可能是列表中的最後一個
-                            selectedCameraIndex = cameras.length - 1;
-                            console.log('iOS裝置: 未找到明確標示的後置相機，使用最後一個相機 (索引:', selectedCameraIndex, ')');
-                        }
-                    } else if (isMobile) {
-                        // 非 iOS 的移動裝置處理邏輯
+                    if (isMobileDevice()) {
+                        // 行動裝置優先使用後置相機
                         let backCameraIndex = -1;
                         
                         // 嘗試尋找後置鏡頭
                         for (let i = 0; i < cameras.length; i++) {
-                            if (isBackCamera(cameras[i])) {
+                            const cameraName = cameras[i].name.toLowerCase();
+                            if (cameraName.includes('back') || 
+                                cameraName.includes('rear') || 
+                                cameraName.includes('environment')) {
                                 backCameraIndex = i;
                                 break;
                             }
@@ -204,23 +256,17 @@ function startScanner() {
                         
                         if (backCameraIndex !== -1) {
                             selectedCameraIndex = backCameraIndex;
-                            console.log('行動裝置: 找到後置相機，使用索引:', selectedCameraIndex);
-                        } else {
-                            // 如果沒找到明確的後置相機，使用最後一個
+                            console.log('找到後置相機，使用索引:', selectedCameraIndex);
+                        } else if (cameras.length > 1) {
+                            // 如果沒找到明確的後置相機，使用最後一個相機
                             selectedCameraIndex = cameras.length - 1;
-                            console.log('行動裝置: 未找到後置相機，使用最後一個相機 (索引:', selectedCameraIndex, ')');
+                            console.log('未找到明確的後置相機，使用最後一個相機 (索引:', selectedCameraIndex, ')');
                         }
-                    } else {
-                        // 桌面裝置處理邏輯
-                        console.log('桌面裝置: 使用預設相機 (索引: 0)');
                     }
 
                     // 設定當前相機索引
                     currentCameraIndex = selectedCameraIndex;
-
-                    // 顯示相機選擇的資訊
-                    console.log('選擇相機:', cameras[currentCameraIndex].name);
-                    console.log('相機類型:', isFrontCamera(cameras[currentCameraIndex]) ? '前置' : '後置');
+                    console.log('使用相機:', cameras[currentCameraIndex].name);
 
                     // 啟動所選相機
                     scanner.start(cameras[currentCameraIndex]);
@@ -266,10 +312,18 @@ function startScanner() {
 function stopScanner() {
     const scannerDiv = document.getElementById('qrcode-scanner');
     const switchButton = document.getElementById('switch-camera');
+    const preview = document.getElementById('preview');
 
     if (scanner) {
         try {
             scanner.stop();
+            
+            // 清理視訊流
+            if (preview && preview.srcObject) {
+                const tracks = preview.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                preview.srcObject = null;
+            }
         } catch (error) {
             console.error('停止掃描器時發生錯誤:', error);
         }
