@@ -4,26 +4,57 @@
     "questions": [
       {
         "type": "yesno",
-        "text": "問題 1",
+        "text": "施打化療前應穿著前扣式衣物，以利醫護人員觀察注射部位?",
         "correctAnswer": "是",
         "score": 10
       },
       {
         "type": "yesno",
-        "text": "問題 2",
-        "correctAnswer": "是",
-        "score": 1
+        "text": "施打化療過程中出現不適症狀，可自行將注射機器關機再通知醫護人員?",
+        "correctAnswer": "否",
+        "score": 10
+      },
+      {
+        "type": "yesno",
+        "text": "注射化療期間可以使用裝置人工血管的手臂推行點滴架、提重物及激烈的擴胸運動",
+        "correctAnswer": "否",
+        "score": 20
       },
       {
         "type": "choice",
-        "text": "問題 3",
+        "text": "施打化療期間，須避免做下列哪些活動，以避免化療藥物滲漏？",
         "options": [
-          "選項 1",
-          "選項 2",
-          "選項 3"
+          "洗澡",
+          "換衣服",
+          "上下床",
+          "以上皆是"
         ],
-        "correctOptionIndex": 0,
-        "score": 1
+        "correctOptionIndex": 3,
+        "score": 20
+      },
+      {
+        "type": "choice",
+        "text": "注射化療期間，發生下列哪些事項時，須立即告知醫護人員？",
+        "options": [
+          "注射部位有液體滲出",
+          "管路拉扯或管路脫落",
+          "注射部位疼痛",
+          "以上皆是"
+        ],
+        "correctOptionIndex": 3,
+        "score": 20
+      },
+      {
+        "type": "choice",
+        "text": "下列何者為化療滲漏症狀？",
+        "options": [
+          "局部灼熱感或刺痛",
+          "皮膚紅斑",
+          "搔癢",
+          "以上皆是"
+        ],
+        "correctOptionIndex": 3,
+        "score": 20
       }
     ]
   },
