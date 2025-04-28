@@ -148,7 +148,7 @@ function startScanner() {
                         // 優先尋找名稱中不包含 'environment' 的相機
                         for (let i = 0; i < cameras.length; i++) {
                             const cameraName = cameras[i].name.toLowerCase();
-                            if (!cameraName.includes('environment')) {
+                            if (!cameraName.includes('back')) {
                                 backCameraFoundIndex = i;
                                 break; // 找到第一個非前置鏡頭就停止
                             }
@@ -169,9 +169,9 @@ function startScanner() {
                          for (let i = 0; i < cameras.length; i++) {
                              const cameraName = cameras[i].name.toLowerCase();
                              if (cameraName.includes('back') ||
-                                 (cameraName.includes('camera') && !cameraName.includes('environment')) ||
-                                 cameraName.includes('環境') ||
-                                 cameraName.includes('後置')) {
+                                 (cameraName.includes('camera') && !cameraName.includes('back')) ||
+                                 cameraName.includes('environment') ||
+                                 cameraName.includes('front')) {
                                  backCameraIndex = i;
                                  break;
                              }
