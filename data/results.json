@@ -185,5 +185,16 @@
     "maxScore": 0,
     "nurseAcknowledged": false,
     "timestamp": "2025-04-28T02:15:55.318Z"
+  },
+  {
+    "id": "1745823673240",
+    "qrCode": "7101",
+    "topicId": 2,
+    "topicName": "化學治療的簡介",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-28T07:01:13.240Z"
   }
 ]
