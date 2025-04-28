@@ -272,6 +272,13 @@ function startScanner() {
             // 停止掃描器，先延遲一下讓使用者看到掃描成功動畫
             setTimeout(() => {
                 stopScanner();
+
+
+
+
+
+
+
                 
                 // 顯示成功訊息
                 if (typeof showNotification === 'function') {
@@ -279,6 +286,24 @@ function startScanner() {
                 } else {
                     alert('QR Code 掃描成功');
                 }
+ // 掃描到 QR Code 時的處理
+        scanner.addListener('scan', function(content) {
+            document.getElementById('qrcode-result').value = content;
+            stopScanner();
+            
+            // 允許選擇主題
+            document.getElementById('submit-topic').disabled = false;
+            
+            // 顯示成功訊息
+            if (typeof showNotification === 'function') {
+                showNotification('QR Code 掃描成功', 'success');
+            } else {
+                alert('QR Code 掃描成功');
+            }
+        });
+
+     // 掃描到 QR Code 時的處理
+
                 
                 scanDebounce = false;
             }, 800); // 延遲關閉掃描器，讓使用者看到掃描成功的狀態
