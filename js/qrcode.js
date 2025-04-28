@@ -1,4 +1,3 @@
-
 // @charset "UTF-8";
 // QR Code 掃描功能
 
@@ -73,25 +72,15 @@ function switchCamera() {
     // 啟動新相機
     scanner.start(availableCameras[currentCameraIndex]);
     
-    // 顯示當前使用的相機
-    console.log('已切換到相機:', availableCameras[currentCameraIndex].name);
-    
     // 顯示通知
     if (typeof showNotification === 'function') {
-        showNotification('已切換相機', 'info');
+        showNotification('已切換到' + (availableCameras[currentCameraIndex].name.toLowerCase().includes('front') ? '前置' : '後置') + '相機', 'info');
     }
 }
 
-// 判斷設備類型
-function getDeviceType() {
-    const ua = navigator.userAgent;
-    if (/iPhone|iPad|iPod/i.test(ua)) {
-        return 'ios';
-    } else if (/Android/i.test(ua)) {
-        return 'android';
-    } else {
-        return 'other';
-    }
+// 判斷是否為 iPhone
+function isIPhone() {
+    return /iPhone/i.test(navigator.userAgent);
 }
 
 // 啟動掃描器
@@ -114,12 +103,10 @@ function startScanner() {
             throw new Error('Instascan 函式庫未載入，請檢查網路連接');
         }
         
-        // 創建掃描器實例，不設置鏡像以確保畫面正確
+        // 創建掃描器實例
         scanner = new Instascan.Scanner({ 
             video: preview,
-            mirror: false,
-            captureImage: false,  // 關閉圖像捕獲以提高性能
-            backgroundScan: false // 關閉背景掃描以省電
+            mirror: false // 對行動裝置來說設為 false 較好
         });
         
         // 掃描到 QR Code 時的處理
@@ -128,9 +115,7 @@ function startScanner() {
             stopScanner();
             
             // 允許選擇主題
-            if (document.getElementById('submit-topic')) {
-                document.getElementById('submit-topic').disabled = false;
-            }
+            document.getElementById('submit-topic').disabled = false;
             
             // 顯示成功訊息
             if (typeof showNotification === 'function') {
@@ -140,120 +125,84 @@ function startScanner() {
             }
         });
         
-        // 獲取設備類型
-        const deviceType = getDeviceType();
-        console.log('設備類型:', deviceType);
-        
-        // 使用 MediaDevices API 獲取相機，更可靠
-        if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-            navigator.mediaDevices.enumerateDevices()
-                .then(devices => {
-                    console.log('可用設備:', devices);
-                    // 過濾出視頻輸入設備
-                    const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                    console.log('視頻設備:', videoDevices);
+        // 啟動相機
+        Instascan.Camera.getCameras()
+            .then(function(cameras) {
+                if (cameras.length > 0) {
+                    // 儲存所有可用相機
+                    availableCameras = cameras;
                     
-                    // 然後使用 Instascan 獲取相機
-                    return Instascan.Camera.getCameras();
-                })
-                .then(function(cameras) {
-                    console.log('Instascan 相機列表:', cameras.map(c => c.name));
+                    // 是否為 iPhone
+                    const isIPhoneDevice = isIPhone();
+                    console.log('是否為 iPhone:', isIPhoneDevice);
                     
-                    if (cameras.length > 0) {
-                        // 儲存所有可用相機
-                        availableCameras = cameras;
-                        
-                        // 根據設備類型選擇後置相機
-                        let backCameraIndex = findBackCamera(cameras, deviceType);
-                        console.log('選擇的後置相機索引:', backCameraIndex);
-                        
-                        // 設定當前相機索引
-                        currentCameraIndex = backCameraIndex;
-                        
-                        console.log('啟動相機:', cameras[currentCameraIndex].name);
-                        
-                        // 啟動所選相機
-                        scanner.start(cameras[currentCameraIndex])
-                            .then(() => {
-                                console.log('相機啟動成功');
-                                
-                                // 如果有多個相機，顯示切換按鈕
-                                if (cameras.length > 1 && switchButton) {
-                                    switchButton.style.display = 'block';
-                                }
-                            })
-                            .catch(err => {
-                                console.error('相機啟動失敗:', err);
-                                // 如果後置相機啟動失敗，嘗試前置相機
-                                if (currentCameraIndex !== 0 && cameras.length > 1) {
-                                    console.log('嘗試啟動前置相機');
-                                    currentCameraIndex = 0;
-                                    return scanner.start(cameras[0]);
-                                }
-                                throw err;
-                            });
+                    // 選擇預設相機（後置優先）
+                    let backCameraIndex = -1;
+                    
+                    if (isIPhoneDevice) {
+                        // iPhone 特別處理：通常後置相機是第一個 (index 0)
+                        backCameraIndex = 0;
                     } else {
-                        if (typeof showNotification === 'function') {
-                            showNotification('未找到相機設備！', 'error');
-                        } else {
-                            alert('未找到相機設備！');
+                        // 其他設備: 嘗試從名稱識別後置相機
+                        for (let i = 0; i < cameras.length; i++) {
+                            const cameraName = cameras[i].name.toLowerCase();
+                            
+                            // 識別後置相機
+                            if (cameraName.includes('back') || 
+                                (cameraName.includes('camera') && !cameraName.includes('front')) ||
+                                cameraName.includes('環境') || 
+                                cameraName.includes('後置')) {
+                                backCameraIndex = i;
+                                break;
+                            }
                         }
-                        scannerDiv.style.display = 'none';
+                        
+                        // 如果沒找到明確的後置相機，使用最後一個相機
+                        if (backCameraIndex === -1 && cameras.length > 1) {
+                            backCameraIndex = cameras.length - 1;
+                        }
                     }
-                })
-                .catch(function(error) {
-                    console.error('Error accessing cameras:', error);
                     
+                    // 如果找不到任何後置相機，使用第一個相機
+                    if (backCameraIndex === -1) {
+                        backCameraIndex = 0;
+                    }
+                    
+                    // 設定當前相機索引
+                    currentCameraIndex = backCameraIndex;
+                    
+                    // 顯示相機選擇的資訊
+                    console.log('相機列表:', cameras.map(c => c.name));
+                    console.log('選擇相機索引:', currentCameraIndex);
+                    console.log('選擇相機:', cameras[currentCameraIndex].name);
+                    
+                    // 啟動所選相機
+                    scanner.start(cameras[currentCameraIndex]);
+                    
+                    // 如果有多個相機，顯示切換按鈕
+                    if (cameras.length > 1 && switchButton) {
+                        switchButton.style.display = 'block';
+                    }
+                } else {
                     if (typeof showNotification === 'function') {
-                        showNotification('無法存取相機：' + error.message, 'error');
+                        showNotification('未找到相機設備！', 'error');
                     } else {
-                        alert('無法存取相機：' + error.message);
+                        alert('未找到相機設備！');
                     }
-                    
                     scannerDiv.style.display = 'none';
-                });
-        } else {
-            // 舊方法，僅作為備用
-            Instascan.Camera.getCameras()
-                .then(function(cameras) {
-                    if (cameras.length > 0) {
-                        // 儲存所有可用相機
-                        availableCameras = cameras;
-                        
-                        // 根據設備類型選擇後置相機
-                        let backCameraIndex = findBackCamera(cameras, deviceType);
-                        
-                        // 設定當前相機索引
-                        currentCameraIndex = backCameraIndex;
-                        
-                        // 啟動所選相機
-                        scanner.start(cameras[currentCameraIndex]);
-                        
-                        // 如果有多個相機，顯示切換按鈕
-                        if (cameras.length > 1 && switchButton) {
-                            switchButton.style.display = 'block';
-                        }
-                    } else {
-                        if (typeof showNotification === 'function') {
-                            showNotification('未找到相機設備！', 'error');
-                        } else {
-                            alert('未找到相機設備！');
-                        }
-                        scannerDiv.style.display = 'none';
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Error accessing cameras:', error);
-                    
-                    if (typeof showNotification === 'function') {
-                        showNotification('無法存取相機：' + error.message, 'error');
-                    } else {
-                        alert('無法存取相機：' + error.message);
-                    }
-                    
-                    scannerDiv.style.display = 'none';
-                });
-        }
+                }
+            })
+            .catch(function(error) {
+                console.error('Error accessing cameras:', error);
+                
+                if (typeof showNotification === 'function') {
+                    showNotification('無法存取相機：' + error.message, 'error');
+                } else {
+                    alert('無法存取相機：' + error.message);
+                }
+                
+                scannerDiv.style.display = 'none';
+            });
     } catch (error) {
         console.error('啟動掃描器時發生錯誤:', error);
         
@@ -265,79 +214,6 @@ function startScanner() {
         
         scannerDiv.style.display = 'none';
     }
-}
-
-// 根據設備類型找到後置相機
-function findBackCamera(cameras, deviceType) {
-    // 特殊情況處理
-    if (cameras.length === 1) {
-        return 0; // 只有一個相機，直接使用
-    }
-    
-    console.log('嘗試尋找後置相機...');
-    
-    // 對於 iOS 設備
-    if (deviceType === 'ios') {
-        // iOS 設備通常第一個是前置相機，第二個是後置相機
-        if (cameras.length >= 2) {
-            return 1; // 使用第二個相機
-        }
-    }
-    
-    // 對於 Android 設備
-    if (deviceType === 'android') {
-        // 先嘗試找名稱含有 back 或 環境 等關鍵詞的相機
-        for (let i = 0; i < cameras.length; i++) {
-            const cameraName = cameras[i].name.toLowerCase();
-            if (
-                cameraName.includes('back') || 
-                cameraName.includes('環境') || 
-                cameraName.includes('後置') ||
-                cameraName.includes('0')
-            ) {
-                return i;
-            }
-        }
-        
-        // 如果沒找到明確標記為後置的相機，使用最後一個
-        return cameras.length - 1;
-    }
-    
-    // 對於其他設備，嘗試所有可能的方式找後置相機
-    
-    // 1. 嘗試通過名稱識別
-    for (let i = 0; i < cameras.length; i++) {
-        const cameraName = cameras[i].name.toLowerCase();
-        if (
-            cameraName.includes('back') || 
-            cameraName.includes('rear') || 
-            cameraName.includes('環境') || 
-            cameraName.includes('後置')
-        ) {
-            return i;
-        }
-    }
-    
-    // 2. 排除前置相機
-    for (let i = 0; i < cameras.length; i++) {
-        const cameraName = cameras[i].name.toLowerCase();
-        if (
-            !cameraName.includes('front') && 
-            !cameraName.includes('前置') &&
-            !cameraName.includes('facetime')
-        ) {
-            return i;
-        }
-    }
-    
-    // 3. 最後嘗試用索引位置
-    // 很多裝置最後一個相機是後置相機
-    if (cameras.length > 1) {
-        return cameras.length - 1;
-    }
-    
-    // 如果都找不到，預設使用第一個相機
-    return 0;
 }
 
 // 停止掃描器
