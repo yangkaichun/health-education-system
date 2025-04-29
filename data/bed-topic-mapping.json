@@ -1,0 +1,10 @@
+[
+    {
+      "bedNumber": "7011",
+      "topicIds": [1, 3, 7]
+    },
+    {
+      "bedNumber": "7012",
+      "topicIds": [2, 5, 10]
+    }
+  ]

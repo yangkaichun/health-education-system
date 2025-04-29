@@ -5,255 +5,430 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>床號衛教設定</title>
-    <!-- 載入現有系統的 CSS -->
+    <title>衛教題組設定</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/admin.css">
-    <!-- 預加載關鍵資源 -->
-    <link rel="preload" href="js/github-auth.js" as="script">
-    <link rel="preload" href="js/github-storage.js" as="script">
+    <link rel="stylesheet" href="css/index.css">
     <style>
-        /* 床號設定頁面特定樣式 */
-        .topic-selection {
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #e74c3c;
+            --secondary-dark: #c0392b;
+            --accent-color: #2ecc71;
+            --accent-dark: #27ae60;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --light-gray: #f1f1f1;
+            --mid-gray: #ddd;
+            --dark-gray: #aaa;
+            --shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        
-        .topic-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+
+        body {
+            font-family: "Microsoft JhengHei", "微軟正黑體", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
         }
-        
-        .topic-card {
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 1rem;
-            background-color: white;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
-        
-        .topic-card.selected {
-            border-color: #4CAF50;
-            background-color: #e8f5e9;
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
         }
-        
-        .topic-card.selected:before {
-            content: "✓";
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            color: #4CAF50;
-            font-weight: bold;
+
+        header h1 {
+            margin: 0;
+            padding: 0 20px;
+            font-size: 1.8rem;
         }
-        
-        .topic-id {
-            font-weight: bold;
-            margin-right: 0.5rem;
-            color: #495057;
+
+        nav {
+            background-color: var(--primary-dark);
         }
-        
-        .topic-name {
-            font-size: 1rem;
-            color: #212529;
-            word-break: break-word;
-        }
-        
-        .selection-summary {
-            margin-top: 1rem;
-            padding: 0.5rem;
-            background-color: #e8f5e9;
-            border-radius: 5px;
+
+        nav ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
-        
-        .bed-config {
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background-color: #f8f9fa;
+
+        nav li {
+            margin: 0;
+            padding: 0;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        main {
+            padding: 2rem 0;
+        }
+
+        section {
+            background: white;
             border-radius: 5px;
-            border: 1px solid #dee2e6;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
-        
+
+        h2 {
+            margin-top: 0;
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
-        
-        .form-group label {
+
+        label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: bold;
         }
-        
-        .form-group input {
+
+        input[type="text"],
+        select {
             width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ced4da;
-            border-radius: 3px;
+            padding: 0.8rem;
+            border: 1px solid var(--mid-gray);
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
         }
-        
-        .action-buttons {
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        button:disabled {
+            background-color: var(--dark-gray);
+            cursor: not-allowed;
+        }
+
+        button.secondary {
+            background-color: var(--mid-gray);
+            color: var(--text-color);
+        }
+
+        button.secondary:hover {
+            background-color: var(--dark-gray);
+        }
+
+        button.danger {
+            background-color: var(--secondary-color);
+        }
+
+        button.danger:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .topic-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            border: 1px solid var(--mid-gray);
+            border-radius: 4px;
+        }
+
+        .topic-item {
+            background-color: var(--light-gray);
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .topic-item.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .configurations {
+            margin-top: 2rem;
+        }
+
+        .config-item {
+            background-color: var(--light-gray);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .config-info {
+            flex: 1;
+        }
+
+        .config-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .topic-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .config-actions {
             display: flex;
             gap: 0.5rem;
         }
-        
-        .primary-button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .primary-button:hover {
-            background-color: #0069d9;
-        }
-        
-        .primary-button:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        
-        .secondary-button {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .secondary-button:hover {
-            background-color: #5a6268;
-        }
-        
-        .delete-button {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .delete-button:hover {
-            background-color: #c82333;
-        }
-        
-        .edit-button {
-            background-color: #17a2b8;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .edit-button:hover {
-            background-color: #138496;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-        
-        .no-data {
-            text-align: center;
-            color: #6c757d;
-            padding: 1rem;
-        }
-        
-        .topic-chip {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            background-color: #e9ecef;
-            border-radius: 16px;
-            margin-right: 0.25rem;
-            margin-bottom: 0.25rem;
-            font-size: 0.875rem;
-        }
-        
-        .loader-spinner {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid rgba(0, 0, 0, 0.2);
-            border-top-color: #007bff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 0.5rem;
-        }
-        
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
+
         .system-messages {
-            margin-bottom: 1rem;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            max-width: 300px;
         }
-        
-        .error-message, .success-message {
-            padding: 0.75rem;
-            border-radius: 3px;
-            margin-bottom: 0.5rem;
+
+        .message {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.3s ease-in-out;
             position: relative;
         }
-        
-        .error-message {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+
+        .message.success {
+            background-color: var(--accent-color);
+            color: white;
         }
-        
-        .success-message {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
+
+        .message.error {
+            background-color: var(--secondary-color);
+            color: white;
         }
-        
+
+        .message.warning {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .message.info {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
         .close-message {
             position: absolute;
             top: 0.5rem;
             right: 0.5rem;
             background: none;
             border: none;
-            font-size: 1rem;
+            color: white;
             cursor: pointer;
-            color: inherit;
-            opacity: 0.7;
+            font-size: 1rem;
+            padding: 0;
         }
-        
-        .close-message:hover {
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 5px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .modal-title {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .checkbox-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            border: 1px solid var(--mid-gray);
+            border-radius: 4px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-item input {
+            margin-right: 5px;
+        }
+
+        .selected-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .topic-tag {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .topic-tag button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .overlay.active {
             opacity: 1;
+            visibility: visible;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .config-list {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .config-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .config-actions {
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: flex-end;
+            }
         }
     </style>
 </head>
@@ -270,114 +445,115 @@
             <ul>
                 <li><a href="index.html">影片觀看</a></li>
                 <li><a href="results.html">結果列表</a></li>
-                <li><a href="admin.html">管理設定</a></li>
+                <li><a href="admin.html">影片管理</a></li>
                 <li><a href="setting.html" class="active">床號設定</a></li>
             </ul>
         </nav>
     </header>
 
-    <main>
+    <main class="container">
         <!-- 系統訊息區域 -->
         <div id="system-messages" class="system-messages">
-            <!-- 錯誤和狀態消息將顯示在這裡 -->
+            <!-- 訊息會在這裡動態生成 -->
         </div>
 
-        <!-- GitHub 連接狀態區塊 -->
-        <section id="github-status">
-            <div class="status-container">
-                <div id="connection-status" class="status-indicator">
-                    <span class="status-icon">⚫</span>
-                    <span class="status-text">檢查連接中...</span>
-                </div>
-                <div class="status-actions">
-                    <button id="check-connection">重新檢查連接</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- 主題選擇區塊 -->
-        <section class="topic-selection">
-            <h2>選擇衛教主題</h2>
-            <p>從下方選擇要包含在題組中的衛教主題</p>
-            
-            <div class="topic-grid" id="topic-grid">
-                <p class="loading-message">
-                    <span class="loader-spinner"></span>
-                    載入主題中...
-                </p>
-            </div>
-            
-            <div class="selection-summary">
-                <span id="selected-count">已選擇: <strong>0</strong> 個主題</span>
-                <button id="reset-selection" class="secondary-button" disabled>重置選擇</button>
-            </div>
-        </section>
-
-        <!-- 床號配置區塊 -->
-        <section class="bed-config">
-            <h2>床號衛教題組配置</h2>
-            <p>設定特定床號對應的衛教主題</p>
-            
-            <form id="bed-config-form">
+        <div id="settings-section">
+            <section>
+                <h2>床號與題組設定</h2>
                 <div class="form-group">
                     <label for="bed-number">床號</label>
-                    <input type="text" id="bed-number" placeholder="輸入床號（如：7011）" required>
+                    <input type="text" id="bed-number" placeholder="請輸入床號 (例如: A101)" required>
                 </div>
-                
-                <div class="form-group">
-                    <label for="group-name">題組名稱</label>
-                    <input type="text" id="group-name" placeholder="輸入題組名稱（如：術後衛教）" required>
-                </div>
-                
-                <div class="action-buttons">
-                    <button type="submit" id="save-config" class="primary-button" disabled>儲存配置</button>
-                    <button type="button" id="cancel-edit" class="secondary-button" style="display: none;">取消編輯</button>
-                </div>
-            </form>
-        </section>
 
-        <!-- 已配置床號區塊 -->
-        <section class="configured-beds">
-            <h2>已配置床號</h2>
-            
-            <table id="bed-table">
-                <thead>
-                    <tr>
-                        <th>床號</th>
-                        <th>題組名稱</th>
-                        <th>包含主題</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="bed-table-body">
-                    <!-- 預設顯示無數據訊息 -->
-                    <tr>
-                        <td colspan="4" class="no-data">尚未配置任何床號題組</td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+                <div class="form-group">
+                    <label>選擇衛教影片題組</label>
+                    <div class="checkbox-container" id="topic-checkboxes">
+                        <!-- 題組複選框將由 JavaScript 動態生成 -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>已選擇的題組：</label>
+                    <div class="selected-topics" id="selected-topics">
+                        <!-- 已選擇的題組標籤將在這裡顯示 -->
+                        <div class="empty-selection">尚未選擇任何題組</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button id="clear-selection" class="secondary">清除選擇</button>
+                    <button id="save-configuration">儲存設定</button>
+                </div>
+            </section>
+
+            <section>
+                <h2>現有床號設定</h2>
+                <div class="form-group">
+                    <input type="text" id="search-bed" placeholder="搜尋床號...">
+                </div>
+                <div class="config-list" id="config-list">
+                    <!-- 現有設定將由 JavaScript 動態生成 -->
+                    <div class="empty-config" style="text-align: center; padding: 2rem; color: var(--dark-gray);">
+                        尚未有任何床號設定
+                    </div>
+                </div>
+            </section>
+        </div>
     </main>
+
+    <!-- 編輯模態框 -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">編輯床號設定</h3>
+            <div class="form-group">
+                <label for="edit-bed-number">床號</label>
+                <input type="text" id="edit-bed-number" required>
+            </div>
+            <div class="form-group">
+                <label>選擇衛教影片題組</label>
+                <div class="checkbox-container" id="edit-topic-checkboxes">
+                    <!-- 編輯用題組複選框 -->
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-edit" class="secondary">取消</button>
+                <button id="confirm-edit">儲存變更</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 刪除確認模態框 -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">確認刪除</h3>
+            <p>您確定要刪除床號 <span id="delete-bed-number"></span> 的設定嗎？此操作無法撤銷。</p>
+            <div class="modal-actions">
+                <button id="cancel-delete" class="secondary">取消</button>
+                <button id="confirm-delete" class="danger">確認刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入指示器 -->
+    <div id="loader-overlay" class="overlay">
+        <div class="loader"></div>
+    </div>
 
     <footer>
         <p>&copy; 2025 衛教影片觀看系統</p>
     </footer>
 
-    <!-- 先加載認證和存儲腳本 -->
     <script src="js/github-auth.js"></script>
     <script src="js/github-storage.js"></script>
-    
-    <!-- 床號設定頁面特定腳本 -->
     <script>
         // 全局變數
-        let topics = []; // 存儲所有主題
-        let bedConfigurations = []; // 存儲所有床號配置
-        let selectedTopics = []; // 存儲已選中的主題 ID
-        let currentEditingBed = null; // 當前正在編輯的床號索引
-        
-        // 頁面加載完成後執行
-        document.addEventListener('DOMContentLoaded', async function() {
-            // 隱藏加載指示器
+        let allTopics = [];
+        let bedConfigurations = [];
+        let selectedTopics = [];
+        let currentEditId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 隱藏載入指示器
             setTimeout(function() {
                 const loader = document.getElementById('page-loader');
                 if (loader) {
@@ -387,405 +563,578 @@
                     }, 300);
                 }
             }, 500);
-            
-            // 初始化頁面
-            await initPage();
-            
-            // 註冊事件處理器
-            document.getElementById('reset-selection').addEventListener('click', resetSelection);
-            document.getElementById('bed-config-form').addEventListener('submit', saveBedConfiguration);
-            document.getElementById('cancel-edit').addEventListener('click', cancelEditing);
-            document.getElementById('check-connection').addEventListener('click', checkGitHubConnection);
-        });
-        
-        // 初始化頁面
-        async function initPage() {
-            try {
-                // 檢查 GitHub 連接
-                await checkGitHubConnection();
-                
-                // 加載主題數據
-                await loadTopics();
-                
-                // 加載床號配置
-                await loadBedConfigurations();
-            } catch (error) {
-                showError('初始化頁面時發生錯誤: ' + error.message);
-                console.error('初始化頁面錯誤:', error);
-            }
-        }
-        
-        // 檢查 GitHub 連接
-        async function checkGitHubConnection() {
-            const statusIcon = document.querySelector('#connection-status .status-icon');
-            const statusText = document.querySelector('#connection-status .status-text');
-            
-            statusIcon.textContent = '⚫';
-            statusText.textContent = '檢查連接中...';
-            
-            try {
-                // 假設 GitHub 存儲腳本中有 checkGitHubConnection 函數
-                const result = await window.checkGitHubConnection();
-                
-                if (result.connected) {
-                    statusIcon.textContent = '🟢';
-                    statusIcon.style.color = '#28a745';
-                    statusText.textContent = '已連接到 GitHub 儲存庫';
-                } else {
-                    statusIcon.textContent = '🔴';
-                    statusIcon.style.color = '#dc3545';
-                    statusText.textContent = '無法連接到 GitHub: ' + (result.error || '未知錯誤');
-                }
-            } catch (error) {
-                statusIcon.textContent = '🔴';
-                statusIcon.style.color = '#dc3545';
-                statusText.textContent = '檢查連接時發生錯誤: ' + error.message;
-                console.error('檢查 GitHub 連接錯誤:', error);
-            }
-        }
-        
-        // 加載主題數據
-        async function loadTopics() {
-            const topicGrid = document.getElementById('topic-grid');
-            topicGrid.innerHTML = '<p class="loading-message"><span class="loader-spinner"></span>載入主題中...</p>';
-            
-            try {
-                // 從 GitHub 讀取主題數據
-                const data = await window.readGitHubFile('topics.json');
-                topics = JSON.parse(data);
-                
-                // 渲染主題卡片
-                renderTopics();
-            } catch (error) {
-                topicGrid.innerHTML = '<p class="error-message">載入主題失敗: ' + error.message + '</p>';
-                console.error('載入主題錯誤:', error);
-            }
-        }
-        
-        // 渲染主題卡片
-        function renderTopics() {
-            const topicGrid = document.getElementById('topic-grid');
-            
-            if (topics.length === 0) {
-                topicGrid.innerHTML = '<p class="no-data">沒有可用的主題</p>';
-                return;
-            }
-            
-            topicGrid.innerHTML = '';
-            
-            // 按照 ID 排序主題
-            topics.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-            
-            // 創建主題卡片
-            topics.forEach(topic => {
-                const card = document.createElement('div');
-                card.className = 'topic-card';
-                card.dataset.id = topic.id;
-                
-                if (selectedTopics.includes(topic.id)) {
-                    card.classList.add('selected');
-                }
-                
-                card.innerHTML = `
-                    <span class="topic-id">#${topic.id}</span>
-                    <span class="topic-name">${topic.name}</span>
-                `;
-                
-                card.addEventListener('click', () => toggleTopicSelection(topic.id));
-                
-                topicGrid.appendChild(card);
-            });
-        }
-        
-        // 切換主題選擇狀態
-        function toggleTopicSelection(topicId) {
-            const index = selectedTopics.indexOf(topicId);
-            
-            if (index === -1) {
-                // 選中主題
-                selectedTopics.push(topicId);
+
+            // 檢查登入狀態
+            if (typeof isUserAuthenticated === 'function' && isUserAuthenticated()) {
+                initializePage();
             } else {
-                // 取消選中
-                selectedTopics.splice(index, 1);
+                showMessage('請先登入系統', 'error');
+                setTimeout(() => {
+                    window.location.href = 'login.html?redirect=setting.html';
+                }, 2000);
+            }
+
+            // 設置事件監聽器
+            setupEventListeners();
+        });
+
+        // 初始化頁面
+        async function initializePage() {
+            showLoader();
+            try {
+                // 初始化 GitHub 存儲
+                await initializeGitHubStorage();
+                
+                // 載入所有主題
+                allTopics = await getAllTopics();
+                if (!Array.isArray(allTopics) || allTopics.length === 0) {
+                    // 如果沒有主題，創建預設主題
+                    allTopics = Array.from({ length: 30 }, (_, i) => ({
+                        id: i + 1,
+                        name: `衛教主題 ${i + 1}`,
+                        youtubeUrl: ''
+                    }));
+                }
+                
+                // 載入現有的床號配置
+                await loadBedConfigurations();
+                
+                // 渲染主題選擇框
+                renderTopicCheckboxes();
+                
+                // 渲染現有配置
+                renderConfigurations();
+                
+            } catch (error) {
+                console.error('初始化頁面失敗:', error);
+                showMessage('初始化頁面失敗: ' + error.message, 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+
+        // 設置事件監聽器
+        function setupEventListeners() {
+            // 儲存設定按鈕
+            const saveBtn = document.getElementById('save-configuration');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', saveConfiguration);
             }
             
-            // 更新 UI
-            updateSelectionUI();
-            updateSaveButtonState();
-        }
-        
-        // 更新選擇 UI
-        function updateSelectionUI() {
-            // 更新已選擇數量
-            document.querySelector('#selected-count strong').textContent = selectedTopics.length;
+            // 清除選擇按鈕
+            const clearBtn = document.getElementById('clear-selection');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', clearSelection);
+            }
             
-            // 更新重置按鈕狀態
-            document.getElementById('reset-selection').disabled = selectedTopics.length === 0;
+            // 搜尋框
+            const searchInput = document.getElementById('search-bed');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterConfigurations);
+            }
             
-            // 更新主題卡片樣式
-            const cards = document.querySelectorAll('.topic-card');
-            cards.forEach(card => {
-                const topicId = card.dataset.id;
-                if (selectedTopics.includes(topicId)) {
-                    card.classList.add('selected');
-                } else {
-                    card.classList.remove('selected');
-                }
+            // 編輯模態框按鈕
+            document.getElementById('cancel-edit').addEventListener('click', () => {
+                closeModal('edit-modal');
             });
-        }
-        
-        // 重置選擇
-        function resetSelection() {
-            selectedTopics = [];
-            updateSelectionUI();
-            updateSaveButtonState();
-        }
-        
-        // 更新保存按鈕狀態
-        function updateSaveButtonState() {
-            const bedNumber = document.getElementById('bed-number').value.trim();
-            const groupName = document.getElementById('group-name').value.trim();
             
-            document.getElementById('save-config').disabled = 
-                selectedTopics.length === 0 || !bedNumber || !groupName;
+            document.getElementById('confirm-edit').addEventListener('click', saveEditedConfiguration);
+            
+            // 刪除模態框按鈕
+            document.getElementById('cancel-delete').addEventListener('click', () => {
+                closeModal('delete-modal');
+            });
+            
+            document.getElementById('confirm-delete').addEventListener('click', deleteConfiguration);
         }
-        
-        // 加載床號配置
+
+        // 載入床號配置
         async function loadBedConfigurations() {
             try {
-                // 嘗試從 GitHub 讀取床號配置
-                try {
-                    const data = await window.readGitHubFile('bed_configurations.json');
-                    bedConfigurations = JSON.parse(data);
-                } catch (error) {
-                    // 文件可能不存在，使用空數組
-                    bedConfigurations = [];
-                }
+                // 嘗試從 GitHub 讀取配置
+                const configsJson = await getFileContent('data/bed_configurations.json');
                 
-                // 渲染床號配置表格
-                renderBedConfigurations();
+                if (configsJson) {
+                    bedConfigurations = JSON.parse(configsJson);
+                } else {
+                    // 如果文件不存在，創建新的空配置
+                    bedConfigurations = [];
+                    // 保存空配置
+                    await saveFileContent('data/bed_configurations.json', JSON.stringify(bedConfigurations, null, 2));
+                }
             } catch (error) {
-                showError('載入床號配置時發生錯誤: ' + error.message);
-                console.error('載入床號配置錯誤:', error);
+                console.warn('無法載入床號配置，將創建新配置:', error);
+                bedConfigurations = [];
+                // 保存空配置
+                await saveFileContent('data/bed_configurations.json', JSON.stringify(bedConfigurations, null, 2));
             }
         }
-        
-        // 渲染床號配置表格
-        function renderBedConfigurations() {
-            const tableBody = document.getElementById('bed-table-body');
+
+        // 渲染主題複選框
+        function renderTopicCheckboxes() {
+            const container = document.getElementById('topic-checkboxes');
+            const editContainer = document.getElementById('edit-topic-checkboxes');
             
-            if (bedConfigurations.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="no-data">尚未配置任何床號題組</td></tr>';
-                return;
+            if (!container || !allTopics) return;
+            
+            let checkboxesHtml = '';
+            
+            allTopics.forEach(topic => {
+                checkboxesHtml += `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="topic-${topic.id}" value="${topic.id}" class="topic-checkbox">
+                        <label for="topic-${topic.id}">${topic.id}</label>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = checkboxesHtml;
+            if (editContainer) {
+                editContainer.innerHTML = checkboxesHtml;
             }
             
-            tableBody.innerHTML = '';
-            
-            bedConfigurations.forEach((config, index) => {
-                const tr = document.createElement('tr');
-                
-                // 創建主題芯片 HTML
-                const topicChips = config.topics.map(topicId => {
-                    const topic = topics.find(t => t.id === topicId);
-                    return `<span class="topic-chip">#${topicId}${topic ? ': ' + topic.name : ''}</span>`;
-                }).join('');
-                
-                tr.innerHTML = `
-                    <td>${config.bedNumber}</td>
-                    <td>${config.groupName}</td>
-                    <td>${topicChips}</td>
-                    <td class="action-buttons">
-                        <button class="edit-button" onclick="editBedConfiguration(${index})">編輯</button>
-                        <button class="delete-button" onclick="deleteBedConfiguration(${index})">刪除</button>
-                    </td>
-                `;
-                
-                tableBody.appendChild(tr);
+            // 添加事件監聽器
+            document.querySelectorAll('.topic-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedTopics);
             });
         }
-        
-        // 保存床號配置
-        async function saveBedConfiguration(event) {
-            event.preventDefault();
+
+        // 更新已選擇的主題顯示
+        function updateSelectedTopics() {
+            selectedTopics = [];
             
-            const bedNumber = document.getElementById('bed-number').value.trim();
-            const groupName = document.getElementById('group-name').value.trim();
+            document.querySelectorAll('#topic-checkboxes .topic-checkbox:checked').forEach(checkbox => {
+                selectedTopics.push(parseInt(checkbox.value));
+            });
             
-            if (!bedNumber || !groupName || selectedTopics.length === 0) {
-                showError('請填寫所有必要欄位並選擇至少一個主題');
+            const selectedContainer = document.getElementById('selected-topics');
+            if (!selectedContainer) return;
+            
+            if (selectedTopics.length === 0) {
+                selectedContainer.innerHTML = '<div class="empty-selection">尚未選擇任何題組</div>';
                 return;
             }
             
+            // 排序選定的主題
+            selectedTopics.sort((a, b) => a - b);
+            
+            let html = '';
+            selectedTopics.forEach(topicId => {
+                html += `
+                    <div class="topic-tag">
+                        ${topicId}
+                        <button type="button" data-id="${topicId}" class="remove-topic">×</button>
+                    </div>
+                `;
+            });
+            
+            selectedContainer.innerHTML = html;
+            
+            // 添加刪除標籤的事件監聽器
+            document.querySelectorAll('.remove-topic').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const topicId = this.getAttribute('data-id');
+                    const checkbox = document.getElementById(`topic-${topicId}`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                        updateSelectedTopics();
+                    }
+                });
+            });
+        }
+
+        // 渲染現有配置
+        function renderConfigurations() {
+            const container = document.getElementById('config-list');
+            if (!container) return;
+            
+            if (!bedConfigurations || bedConfigurations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-config" style="text-align: center; padding: 2rem; color: var(--dark-gray);">
+                        尚未有任何床號設定
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            bedConfigurations.forEach(config => {
+                const sortedTopics = [...config.topicIds].sort((a, b) => a - b);
+                let topicsHtml = '';
+                
+                sortedTopics.forEach(topicId => {
+                    topicsHtml += `<span class="topic-badge">${topicId}</span>`;
+                });
+                
+                html += `
+                    <div class="config-item" data-id="${config.id}" data-bed="${config.bedNumber}">
+                        <div class="config-info">
+                            <strong>${config.bedNumber}</strong>
+                            <div class="config-topics">
+                                ${topicsHtml}
+                            </div>
+                        </div>
+                        <div class="config-actions">
+                            <button class="edit-config" data-id="${config.id}">編輯</button>
+                            <button class="delete-config danger" data-id="${config.id}" data-bed="${config.bedNumber}">刪除</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            // 添加編輯和刪除按鈕的事件監聽器
+            document.querySelectorAll('.edit-config').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const configId = this.getAttribute('data-id');
+                    openEditModal(configId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-config').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const configId = this.getAttribute('data-id');
+                    const bedNumber = this.getAttribute('data-bed');
+                    openDeleteModal(configId, bedNumber);
+                });
+            });
+        }
+
+        // 儲存配置
+        async function saveConfiguration() {
+            const bedNumberInput = document.getElementById('bed-number');
+            const bedNumber = bedNumberInput.value.trim();
+            
+            if (!bedNumber) {
+                showMessage('請輸入床號', 'warning');
+                bedNumberInput.focus();
+                return;
+            }
+            
+            if (selectedTopics.length === 0) {
+                showMessage('請選擇至少一個題組', 'warning');
+                return;
+            }
+            
+            // 檢查是否有重複的床號
+            const existingConfig = bedConfigurations.find(config => 
+                config.bedNumber.toLowerCase() === bedNumber.toLowerCase()
+            );
+            
+            if (existingConfig) {
+                showMessage(`床號 ${bedNumber} 已存在`, 'warning');
+                return;
+            }
+            
+            showLoader();
+            
             try {
+                // 創建新配置
                 const newConfig = {
-                    bedNumber,
-                    groupName,
-                    topics: [...selectedTopics]
+                    id: Date.now().toString(),
+                    bedNumber: bedNumber,
+                    topicIds: [...selectedTopics],
+                    createdAt: new Date().toISOString()
                 };
                 
-                if (currentEditingBed !== null) {
-                    // 更新現有配置
-                    bedConfigurations[currentEditingBed] = newConfig;
-                } else {
-                    // 檢查床號是否已經存在
-                    const existingIndex = bedConfigurations.findIndex(c => c.bedNumber === bedNumber);
-                    
-                    if (existingIndex !== -1) {
-                        // 確認是否覆蓋
-                        if (!confirm(`床號 ${bedNumber} 已存在配置，是否覆蓋？`)) {
-                            return;
-                        }
-                        
-                        // 覆蓋現有配置
-                        bedConfigurations[existingIndex] = newConfig;
-                    } else {
-                        // 添加新配置
-                        bedConfigurations.push(newConfig);
-                    }
-                }
+                // 添加到配置數組
+                bedConfigurations.push(newConfig);
                 
                 // 保存到 GitHub
-                await window.writeGitHubFile('bed_configurations.json', JSON.stringify(bedConfigurations, null, 2));
+                await saveFileContent('data/bed_configurations.json', JSON.stringify(bedConfigurations, null, 2));
                 
-                // 重新渲染床號配置表格
-                renderBedConfigurations();
+                // 清空表單
+                bedNumberInput.value = '';
+                clearSelection();
                 
-                // 重置表單
-                resetForm();
+                // 重新渲染配置
+                renderConfigurations();
                 
-                showSuccess('床號配置已保存');
+                showMessage(`床號 ${bedNumber} 設定已儲存`, 'success');
             } catch (error) {
-                showError('保存床號配置時發生錯誤: ' + error.message);
-                console.error('保存床號配置錯誤:', error);
+                console.error('儲存配置失敗:', error);
+                showMessage('儲存配置失敗: ' + error.message, 'error');
+            } finally {
+                hideLoader();
             }
         }
-        
-        // 編輯床號配置
-        function editBedConfiguration(index) {
-            const config = bedConfigurations[index];
-            
-            // 設置表單值
-            document.getElementById('bed-number').value = config.bedNumber;
-            document.getElementById('group-name').value = config.groupName;
-            
-            // 設置選中的主題
-            selectedTopics = [...config.topics];
-            updateSelectionUI();
-            
-            // 顯示取消編輯按鈕
-            document.getElementById('cancel-edit').style.display = 'block';
-            
-            // 更新保存按鈕文字
-            document.getElementById('save-config').textContent = '更新配置';
-            document.getElementById('save-config').disabled = false;
-            
-            // 設置當前編輯索引
-            currentEditingBed = index;
-            
-            // 滾動到表單頂部
-            document.querySelector('.bed-config').scrollIntoView({ behavior: 'smooth' });
+
+        // 清除選擇
+        function clearSelection() {
+            document.querySelectorAll('#topic-checkboxes .topic-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateSelectedTopics();
         }
-        
-        // 刪除床號配置
-        async function deleteBedConfiguration(index) {
-            if (!confirm('確定要刪除此床號配置嗎？')) {
+
+        // 篩選配置
+        function filterConfigurations() {
+            const searchText = document.getElementById('search-bed').value.toLowerCase();
+            const configItems = document.querySelectorAll('.config-item');
+            
+            configItems.forEach(item => {
+                const bedNumber = item.getAttribute('data-bed').toLowerCase();
+                if (bedNumber.includes(searchText)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // 開啟編輯模態框
+        function openEditModal(configId) {
+            currentEditId = configId;
+            const config = bedConfigurations.find(c => c.id === configId);
+            
+            if (!config) {
+                showMessage('找不到該配置', 'error');
                 return;
             }
             
-            try {
-                // 從數組中移除配置
-                bedConfigurations.splice(index, 1);
-                
-                // 保存到 GitHub
-                await window.writeGitHubFile('bed_configurations.json', JSON.stringify(bedConfigurations, null, 2));
-                
-                // 重新渲染床號配置表格
-                renderBedConfigurations();
-                
-                // 如果正在編輯被刪除的項目，重置表單
-                if (currentEditingBed === index) {
-                    resetForm();
-                } else if (currentEditingBed > index) {
-                    // 調整當前編輯索引
-                    currentEditingBed--;
+            // 設置床號
+            document.getElementById('edit-bed-number').value = config.bedNumber;
+            
+            // 重置所有複選框
+            document.querySelectorAll('#edit-topic-checkboxes .topic-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // 選中對應的主題
+            config.topicIds.forEach(topicId => {
+                const checkbox = document.getElementById('edit-topic-checkboxes').querySelector(`input[value="${topicId}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
                 }
-                
-                showSuccess('床號配置已刪除');
-            } catch (error) {
-                showError('刪除床號配置時發生錯誤: ' + error.message);
-                console.error('刪除床號配置錯誤:', error);
+            });
+            
+            // 顯示模態框
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        // 關閉模態框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'edit-modal') {
+                currentEditId = null;
             }
         }
-        
-        // 取消編輯
-        function cancelEditing() {
-            resetForm();
-            showSuccess('已取消編輯');
+
+        // 保存編輯後的配置
+        async function saveEditedConfiguration() {
+            const bedNumber = document.getElementById('edit-bed-number').value.trim();
+            
+            if (!bedNumber) {
+                showMessage('請輸入床號', 'warning');
+                return;
+            }
+            
+            // 獲取選中的主題
+            const selectedTopicIds = [];
+            document.querySelectorAll('#edit-topic-checkboxes .topic-checkbox:checked').forEach(checkbox => {
+                selectedTopicIds.push(parseInt(checkbox.value));
+            });
+            
+            if (selectedTopicIds.length === 0) {
+                showMessage('請選擇至少一個題組', 'warning');
+                return;
+            }
+            
+            // 檢查是否有重複的床號（排除當前編輯的配置）
+            const existingConfig = bedConfigurations.find(config => 
+                config.id !== currentEditId && 
+                config.bedNumber.toLowerCase() === bedNumber.toLowerCase()
+            );
+            
+            if (existingConfig) {
+                showMessage(`床號 ${bedNumber} 已存在`, 'warning');
+                return;
+            }
+            
+            showLoader();
+            
+            try {
+                // 更新配置
+                const configIndex = bedConfigurations.findIndex(c => c.id === currentEditId);
+                if (configIndex === -1) {
+                    throw new Error('找不到該配置');
+                }
+                
+                const oldBedNumber = bedConfigurations[configIndex].bedNumber;
+                
+                bedConfigurations[configIndex] = {
+                    ...bedConfigurations[configIndex],
+                    bedNumber: bedNumber,
+                    topicIds: selectedTopicIds,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // 保存到 GitHub
+                await saveFileContent('data/bed_configurations.json', JSON.stringify(bedConfigurations, null, 2));
+                
+                // 關閉模態框
+                closeModal('edit-modal');
+                
+                // 重新渲染配置
+                renderConfigurations();
+                
+                showMessage(`床號 ${oldBedNumber} 已更新為 ${bedNumber}`, 'success');
+            } catch (error) {
+                console.error('更新配置失敗:', error);
+                showMessage('更新配置失敗: ' + error.message, 'error');
+            } finally {
+                hideLoader();
+            }
         }
-        
-        // 重置表單
-        function resetForm() {
-            document.getElementById('bed-config-form').reset();
-            resetSelection();
-            
-            // 隱藏取消編輯按鈕
-            document.getElementById('cancel-edit').style.display = 'none';
-            
-            // 重置保存按鈕文字
-            document.getElementById('save-config').textContent = '儲存配置';
-            document.getElementById('save-config').disabled = true;
-            
-            // 重置當前編輯索引
-            currentEditingBed = null;
+
+        // 開啟刪除確認模態框
+        function openDeleteModal(configId, bedNumber) {
+            currentEditId = configId;
+            document.getElementById('delete-bed-number').textContent = bedNumber;
+            document.getElementById('delete-modal').style.display = 'flex';
         }
-        
-        // 顯示錯誤訊息
-        function showError(message) {
-            const systemMessages = document.getElementById('system-messages');
+
+        // 刪除配置
+        async function deleteConfiguration() {
+            if (!currentEditId) {
+                showMessage('無效的配置 ID', 'error');
+                return;
+            }
             
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'error-message';
-            errorMsg.innerHTML = `
-                <strong>錯誤:</strong> ${message}
-                <button onclick="this.parentNode.remove();" class="close-message">關閉</button>
+            showLoader();
+            
+            try {
+                // 查找配置
+                const configIndex = bedConfigurations.findIndex(c => c.id === currentEditId);
+                if (configIndex === -1) {
+                    throw new Error('找不到該配置');
+                }
+                
+                const deletedConfig = bedConfigurations[configIndex];
+                
+                // 從數組中移除
+                bedConfigurations.splice(configIndex, 1);
+                
+                // 保存到 GitHub
+                await saveFileContent('data/bed_configurations.json', JSON.stringify(bedConfigurations, null, 2));
+                
+                // 關閉模態框
+                closeModal('delete-modal');
+                
+                // 重新渲染配置
+                renderConfigurations();
+                
+                showMessage(`床號 ${deletedConfig.bedNumber} 設定已刪除`, 'success');
+            } catch (error) {
+                console.error('刪除配置失敗:', error);
+                showMessage('刪除配置失敗: ' + error.message, 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+
+        // 顯示訊息
+        function showMessage(message, type = 'info') {
+            const messagesContainer = document.getElementById('system-messages');
+            if (!messagesContainer) return;
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${type}`;
+            messageElement.innerHTML = `
+                ${message}
+                <button class="close-message">&times;</button>
             `;
             
-            systemMessages.appendChild(errorMsg);
+            messagesContainer.appendChild(messageElement);
             
-            // 5 秒後自動移除
+            // 添加關閉按鈕事件
+            messageElement.querySelector('.close-message').addEventListener('click', function() {
+                messageElement.remove();
+            });
+            
+            // 自動移除
             setTimeout(() => {
-                errorMsg.remove();
+                if (messageElement.parentNode) {
+                    messageElement.remove();
+                }
             }, 5000);
         }
-        
-        // 顯示成功訊息
-        function showSuccess(message) {
-            const systemMessages = document.getElementById('system-messages');
-            
-            const successMsg = document.createElement('div');
-            successMsg.className = 'success-message';
-            successMsg.innerHTML = `
-                <strong>成功:</strong> ${message}
-                <button onclick="this.parentNode.remove();" class="close-message">關閉</button>
-            `;
-            
-            systemMessages.appendChild(successMsg);
-            
-            // 3 秒後自動移除
-            setTimeout(() => {
-                successMsg.remove();
-            }, 3000);
+
+        // 顯示載入指示器
+        function showLoader() {
+            document.getElementById('loader-overlay').classList.add('active');
         }
-        
-        // 監聽表單輸入變化
-        document.getElementById('bed-number').addEventListener('input', updateSaveButtonState);
-        document.getElementById('group-name').addEventListener('input', updateSaveButtonState);
-        
-        // 添加全局錯誤處理
+
+        // 隱藏載入指示器
+        function hideLoader() {
+            document.getElementById('loader-overlay').classList.remove('active');
+        }
+
+        // 新增必要的 GitHub 存儲功能
+        async function initializeGitHubStorage() {
+            if (typeof initializeStorage === 'function') {
+                return await initializeStorage();
+            } else {
+                // 模擬初始化以便在本地測試
+                console.warn('GitHub 存儲功能未載入，使用模擬函數');
+                return true;
+            }
+        }
+
+        // 獲取所有主題
+        async function getAllTopics() {
+            if (typeof getTopics === 'function') {
+                return await getTopics();
+            } else {
+                // 模擬數據用於本地測試
+                console.warn('getTopics 函數未載入，使用模擬數據');
+                return Array.from({ length: 30 }, (_, i) => ({
+                    id: i + 1,
+                    name: `衛教主題 ${i + 1}`,
+                    youtubeUrl: ''
+                }));
+            }
+        }
+
+        // 獲取文件內容
+        async function getFileContent(path) {
+            if (typeof readFile === 'function') {
+                try {
+                    return await readFile(path);
+                } catch (error) {
+                    console.warn(`無法讀取文件 ${path}:`, error);
+                    return null;
+                }
+            } else {
+                // 模擬數據用於本地測試
+                console.warn('readFile 函數未載入，使用模擬數據');
+                return localStorage.getItem(path);
+            }
+        }
+
+        // 保存文件內容
+        async function saveFileContent(path, content) {
+            if (typeof saveFile === 'function') {
+                return await saveFile(path, content);
+            } else {
+                // 模擬數據用於本地測試
+                console.warn('saveFile 函數未載入，使用本地存儲模擬');
+                localStorage.setItem(path, content);
+                return true;
+            }
+        }
+
+        // 全局錯誤處理
         window.addEventListener('error', function(event) {
             console.error('全局錯誤:', event.message, event.filename, event.lineno);
-            
-            showError('系統運行時遇到問題: ' + event.message);
+            showMessage(`發生錯誤: ${event.message}`, 'error');
+        });
+
+        // 監聽認證完成事件
+        document.addEventListener('authComplete', function() {
+            initializePage();
         });
     </script>
 </body>
