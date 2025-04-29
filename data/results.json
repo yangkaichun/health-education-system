@@ -29,7 +29,7 @@
     "status": "viewing",
     "score": 0,
     "maxScore": 0,
-    "nurseAcknowledged": false,
+    "nurseAcknowledged": true,
     "timestamp": "2025-04-28T11:53:05.369Z"
   },
   {
