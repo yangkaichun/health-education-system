@@ -5,7 +5,6 @@ let scanner = null;
 let currentCameraIndex = 0;
 let availableCameras = [];
 let iosConstraints = { facingMode: "environment" }; // iOS 後置相機約束預設值
-let isScanning = false; // 防止重複掃描的標誌
 
 // 初始化 QR Code 掃描器
 function initQrScanner() {
@@ -73,7 +72,7 @@ function isMobileDevice() {
 
 // 切換相機 - iOS 特定版本
 function switchCamera() {
-    if (!scanner || isScanning) return; // 防止掃描中切換相機
+    if (!scanner) return;
     
     if (isIOSDevice()) {
         // iOS 裝置特定處理
@@ -134,8 +133,6 @@ function startScannerWithConstraints(constraints) {
         return;
     }
     
-    isScanning = true; // 設置掃描中的標誌
-    
     // 使用 getUserMedia 直接控制相機
     navigator.mediaDevices.getUserMedia({
         video: constraints,
@@ -157,65 +154,12 @@ function startScannerWithConstraints(constraints) {
         console.log('掃描器已啟動，使用相機模式:', constraints.facingMode);
     }).catch(function(error) {
         console.error('無法存取相機:', error);
-        isScanning = false; // 重置掃描中標誌
         if (typeof showNotification === 'function') {
             showNotification('無法存取相機：' + error.message, 'error');
         } else {
             alert('無法存取相機：' + error.message);
         }
     });
-}
-
-// 顯示掃描成功動畫
-function showScanSuccessAnimation() {
-    const scannerDiv = document.getElementById('qrcode-scanner');
-    if (!scannerDiv) return;
-    
-    // 創建一個覆蓋層來顯示動畫
-    const overlay = document.createElement('div');
-    overlay.style.position = 'absolute';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    overlay.style.display = 'flex';
-    overlay.style.justifyContent = 'center';
-    overlay.style.alignItems = 'center';
-    overlay.style.zIndex = '2000';
-    
-    // 創建成功圖標
-    const icon = document.createElement('div');
-    icon.innerHTML = '✓';
-    icon.style.color = '#4CAF50';
-    icon.style.fontSize = '80px';
-    icon.style.backgroundColor = 'white';
-    icon.style.width = '120px';
-    icon.style.height = '120px';
-    icon.style.borderRadius = '60px';
-    icon.style.display = 'flex';
-    icon.style.justifyContent = 'center';
-    icon.style.alignItems = 'center';
-    icon.style.animation = 'fadeInOut 1s ease-in-out';
-    
-    // 添加動畫樣式
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: scale(0.5); }
-            50% { opacity: 1; transform: scale(1.2); }
-            100% { opacity: 0; transform: scale(1); }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    overlay.appendChild(icon);
-    scannerDiv.appendChild(overlay);
-    
-    // 完成動畫後移除覆蓋層
-    setTimeout(() => {
-        scannerDiv.removeChild(overlay);
-    }, 1000);
 }
 
 // 啟動掃描器
@@ -246,73 +190,26 @@ function startScanner() {
             backgroundScan: false // 提高效能
         });
 
-        // 掃描到 QR Code 時的處理 - 使用防抖動邏輯避免多次觸發
-        let scanDebounce = false;
+        // 掃描到 QR Code 時的處理
         scanner.addListener('scan', function(content) {
-            if (scanDebounce) return; // 防止重複掃描
-            scanDebounce = true;
-            
             console.log('掃描到 QR Code:', content);
             
-            // 顯示掃描成功動畫
-            showScanSuccessAnimation();
-            
-            // 保存掃描結果
+            // 將掃描結果寫入 qrcode-result 欄位
             const resultInput = document.getElementById('qrcode-result');
             if (resultInput) {
                 resultInput.value = content;
-            document.getElementById('qrcode-result').value = content;
-    //掃描到欄位        
-            }
-
-
-
-            
-            // 允許選擇主題
-            const submitTopicBtn = document.getElementById('submit-topic');
-            if (submitTopicBtn) {
-                submitTopicBtn.disabled = false;
+                console.log('掃描結果已寫入到欄位:', content);
+            } else {
+                console.error('找不到 id="qrcode-result" 的欄位');
             }
             
-            // 停止掃描器，先延遲一下讓使用者看到掃描成功動畫
-            setTimeout(() => {
-                stopScanner();
-
-
-     // 掃描到 QR Code 時的處理
-
-
-
-
-
-                
-                // 顯示成功訊息
-                if (typeof showNotification === 'function') {
-                    showNotification('QR Code 掃描成功', 'success');
-                } else {
-                    alert('QR Code 掃描成功');
-                }
- // 掃描到 QR Code 時的處理
-        scanner.addListener('scan', function(content) {
-            document.getElementById('qrcode-result').value = content;
+            // 立即停止掃描器和關閉相機
             stopScanner();
-            
-            // 允許選擇主題
-            document.getElementById('submit-topic').disabled = false;
             
             // 顯示成功訊息
             if (typeof showNotification === 'function') {
                 showNotification('QR Code 掃描成功', 'success');
-            } else {
-                alert('QR Code 掃描成功');
             }
-        });
-
-     // 掃描到 QR Code 時的處理
-
-                
-                scanDebounce = false;
-            }, 800); // 延遲關閉掃描器，讓使用者看到掃描成功的狀態
         });
 
         // 檢查裝置類型並進行對應處理
@@ -335,7 +232,6 @@ function startScanner() {
         }
         
         // 非 iOS 裝置的標準處理
-        isScanning = true; // 設置掃描中的標誌
         Instascan.Camera.getCameras()
             .then(function(cameras) {
                 if (cameras.length > 0) {
@@ -383,7 +279,6 @@ function startScanner() {
                         switchButton.style.display = 'block';
                     }
                 } else {
-                    isScanning = false; // 重置掃描中標誌
                     if (typeof showNotification === 'function') {
                         showNotification('未找到相機設備！', 'error');
                     } else {
@@ -394,7 +289,6 @@ function startScanner() {
             })
             .catch(function(error) {
                 console.error('Error accessing cameras:', error);
-                isScanning = false; // 重置掃描中標誌
 
                 if (typeof showNotification === 'function') {
                     showNotification('無法存取相機：' + error.message, 'error');
@@ -406,7 +300,6 @@ function startScanner() {
             });
     } catch (error) {
         console.error('啟動掃描器時發生錯誤:', error);
-        isScanning = false; // 重置掃描中標誌
 
         if (typeof showNotification === 'function') {
             showNotification('啟動掃描器時發生錯誤: ' + error.message, 'error');
@@ -427,11 +320,15 @@ function stopScanner() {
     if (scanner) {
         try {
             scanner.stop();
+            console.log('掃描器已停止');
             
             // 清理視訊流
             if (preview && preview.srcObject) {
                 const tracks = preview.srcObject.getTracks();
-                tracks.forEach(track => track.stop());
+                tracks.forEach(track => {
+                    track.stop();
+                    console.log('相機軌道已停止');
+                });
                 preview.srcObject = null;
             }
         } catch (error) {
@@ -446,8 +343,6 @@ function stopScanner() {
     if (switchButton) {
         switchButton.style.display = 'none';
     }
-    
-    isScanning = false; // 重置掃描中標誌
 }
 
 // 初始化掃描器
