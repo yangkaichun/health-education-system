@@ -12,6 +12,8 @@ function initQrScanner() {
         const scanButton = document.getElementById('scan-button');
         const closeButton = document.getElementById('close-scanner');
         const scannerDiv = document.getElementById('qrcode-scanner');
+        const qrcodeResult = document.getElementById('qrcode-result');
+        const submitTopicBtn = document.getElementById('submit-topic');
 
         // 創建切換相機按鈕
         createSwitchCameraButton();
@@ -22,6 +24,13 @@ function initQrScanner() {
 
         if (closeButton) {
             closeButton.addEventListener('click', stopScanner);
+        }
+        
+        // 監聽 qrcode-result 輸入欄位的變化，有值時啟用送出按鈕
+        if (qrcodeResult && submitTopicBtn) {
+            qrcodeResult.addEventListener('input', function() {
+                submitTopicBtn.disabled = !qrcodeResult.value.trim();
+            });
         }
     });
 }
@@ -70,6 +79,27 @@ function isMobileDevice() {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
+// 顯示系統訊息
+function showSystemMessage(message, type = 'info') {
+    const systemMessages = document.getElementById('system-messages');
+    if (!systemMessages) return;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = type + '-message';
+    messageDiv.innerHTML = `
+        ${message}
+        <button onclick="this.parentNode.remove();" class="close-message">關閉</button>
+    `;
+    systemMessages.appendChild(messageDiv);
+    
+    // 自動消失
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 5000);
+}
+
 // 切換相機 - iOS 特定版本
 function switchCamera() {
     if (!scanner) return;
@@ -95,9 +125,7 @@ function switchCamera() {
         
         // 顯示通知
         const cameraType = (iosConstraints.facingMode === "user") ? '前置' : '後置';
-        if (typeof showNotification === 'function') {
-            showNotification('已切換到' + cameraType + '相機', 'info');
-        }
+        showSystemMessage('已切換到' + cameraType + '相機', 'info');
     } else {
         // 非 iOS 裝置使用原有方法
         if (availableCameras.length <= 1) return;
@@ -114,9 +142,7 @@ function switchCamera() {
         // 顯示通知
         const cameraName = availableCameras[currentCameraIndex].name.toLowerCase();
         const cameraType = (cameraName.includes('front') || cameraName.includes('user')) ? '前置' : '後置';
-        if (typeof showNotification === 'function') {
-            showNotification('已切換到' + cameraType + '相機', 'info');
-        }
+        showSystemMessage('已切換到' + cameraType + '相機', 'info');
     }
 }
 
@@ -154,11 +180,7 @@ function startScannerWithConstraints(constraints) {
         console.log('掃描器已啟動，使用相機模式:', constraints.facingMode);
     }).catch(function(error) {
         console.error('無法存取相機:', error);
-        if (typeof showNotification === 'function') {
-            showNotification('無法存取相機：' + error.message, 'error');
-        } else {
-            alert('無法存取相機：' + error.message);
-        }
+        showSystemMessage('無法存取相機：' + error.message, 'error');
     });
 }
 
@@ -199,6 +221,10 @@ function startScanner() {
             if (resultInput) {
                 resultInput.value = content;
                 console.log('掃描結果已寫入到欄位:', content);
+                
+                // 觸發 input 事件，以便啟用送出按鈕
+                const inputEvent = new Event('input', { bubbles: true });
+                resultInput.dispatchEvent(inputEvent);
             } else {
                 console.error('找不到 id="qrcode-result" 的欄位');
             }
@@ -207,9 +233,7 @@ function startScanner() {
             stopScanner();
             
             // 顯示成功訊息
-            if (typeof showNotification === 'function') {
-                showNotification('QR Code 掃描成功', 'success');
-            }
+            showSystemMessage('QR Code 掃描成功', 'success');
         });
 
         // 檢查裝置類型並進行對應處理
@@ -279,34 +303,18 @@ function startScanner() {
                         switchButton.style.display = 'block';
                     }
                 } else {
-                    if (typeof showNotification === 'function') {
-                        showNotification('未找到相機設備！', 'error');
-                    } else {
-                        alert('未找到相機設備！');
-                    }
+                    showSystemMessage('未找到相機設備！', 'error');
                     scannerDiv.style.display = 'none';
                 }
             })
             .catch(function(error) {
                 console.error('Error accessing cameras:', error);
-
-                if (typeof showNotification === 'function') {
-                    showNotification('無法存取相機：' + error.message, 'error');
-                } else {
-                    alert('無法存取相機：' + error.message);
-                }
-
+                showSystemMessage('無法存取相機：' + error.message, 'error');
                 scannerDiv.style.display = 'none';
             });
     } catch (error) {
         console.error('啟動掃描器時發生錯誤:', error);
-
-        if (typeof showNotification === 'function') {
-            showNotification('啟動掃描器時發生錯誤: ' + error.message, 'error');
-        } else {
-            alert('啟動掃描器時發生錯誤: ' + error.message);
-        }
-
+        showSystemMessage('啟動掃描器時發生錯誤: ' + error.message, 'error');
         scannerDiv.style.display = 'none';
     }
 }
