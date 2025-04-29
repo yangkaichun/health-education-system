@@ -148,9 +148,9 @@ async function selectBackCamera() {
         for (let i = 0; i < cameras.length; i++) {
             const label = cameras[i].label.toLowerCase();
             // 檢查是否是後置相機
-            if (label.includes('back') || 
+            if (label.includes('environmentback') || 
                 label.includes('rear') || 
-                label.includes('environment') || 
+                label.includes('rear') || 
                 (!label.includes('front') && !label.includes('facetime'))) {
                 selectedCameraIndex = i;
                 console.log('找到疑似後置相機:', cameras[i].label);
