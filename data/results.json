@@ -1,5 +1,49 @@
 [
   {
+    "id": "1745900421938",
+    "qrCode": "1110",
+    "topicId": 1,
+    "topicName": "靜脈注射化學治療藥物注意事項",
+    "status": "completed",
+    "score": 30,
+    "maxScore": 100,
+    "nurseAcknowledged": true,
+    "timestamp": "2025-04-29T04:20:21.938Z"
+  },
+  {
+    "id": "1745900394061",
+    "qrCode": "1110",
+    "topicId": 1,
+    "topicName": "靜脈注射化學治療藥物注意事項",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-29T04:19:54.061Z"
+  },
+  {
+    "id": "1745896804560",
+    "qrCode": "遠傳",
+    "topicId": 1,
+    "topicName": "靜脈注射化學治療藥物注意事項",
+    "status": "completed",
+    "score": 30,
+    "maxScore": 100,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-29T03:20:04.560Z"
+  },
+  {
+    "id": "1745896783868",
+    "qrCode": "遠傳",
+    "topicId": 1,
+    "topicName": "靜脈注射化學治療藥物注意事項",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-29T03:19:43.868Z"
+  },
+  {
     "id": "1745850623856",
     "qrCode": "112",
     "topicId": 2,
@@ -273,49 +317,5 @@
     "maxScore": 0,
     "nurseAcknowledged": false,
     "timestamp": "2025-04-26T12:49:59.007Z"
-  },
-  {
-    "id": "1745896783868",
-    "qrCode": "遠傳",
-    "topicId": 1,
-    "topicName": "靜脈注射化學治療藥物注意事項",
-    "status": "viewing",
-    "score": 0,
-    "maxScore": 0,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-29T03:19:43.868Z"
-  },
-  {
-    "id": "1745896804560",
-    "qrCode": "遠傳",
-    "topicId": 1,
-    "topicName": "靜脈注射化學治療藥物注意事項",
-    "status": "completed",
-    "score": 30,
-    "maxScore": 100,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-29T03:20:04.560Z"
-  },
-  {
-    "id": "1745900394061",
-    "qrCode": "1110",
-    "topicId": 1,
-    "topicName": "靜脈注射化學治療藥物注意事項",
-    "status": "viewing",
-    "score": 0,
-    "maxScore": 0,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-29T04:19:54.061Z"
-  },
-  {
-    "id": "1745900421938",
-    "qrCode": "1110",
-    "topicId": 1,
-    "topicName": "靜脈注射化學治療藥物注意事項",
-    "status": "completed",
-    "score": 30,
-    "maxScore": 100,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-29T04:20:21.938Z"
   }
 ]
