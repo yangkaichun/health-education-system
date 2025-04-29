@@ -1,5 +1,60 @@
 [
   {
+    "id": "1745850623856",
+    "qrCode": "112",
+    "topicId": 2,
+    "topicName": "化學治療的簡介",
+    "status": "completed",
+    "score": 0,
+    "maxScore": 100,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-28T14:30:23.856Z"
+  },
+  {
+    "id": "1745850557091",
+    "qrCode": "112",
+    "topicId": 2,
+    "topicName": "化學治療的簡介",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": true,
+    "timestamp": "2025-04-28T14:29:17.091Z"
+  },
+  {
+    "id": "1745841185369",
+    "qrCode": "1323",
+    "topicId": 2,
+    "topicName": "化學治療的簡介",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-28T11:53:05.369Z"
+  },
+  {
+    "id": "1745841156005",
+    "qrCode": "1323",
+    "topicId": 1,
+    "topicName": "靜脈注射化學治療藥物注意事項",
+    "status": "completed",
+    "score": 40,
+    "maxScore": 100,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-28T11:52:36.005Z"
+  },
+  {
+    "id": "1745841078213",
+    "qrCode": "1323",
+    "topicId": 1,
+    "topicName": "靜脈注射化學治療藥物注意事項",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-04-28T11:51:18.213Z"
+  },
+  {
     "id": "1745833478997",
     "qrCode": "122",
     "topicId": 1,
@@ -251,60 +306,5 @@
     "maxScore": 0,
     "nurseAcknowledged": false,
     "timestamp": "2025-04-26T12:49:59.007Z"
-  },
-  {
-    "id": "1745841078213",
-    "qrCode": "1323",
-    "topicId": 1,
-    "topicName": "靜脈注射化學治療藥物注意事項",
-    "status": "viewing",
-    "score": 0,
-    "maxScore": 0,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-28T11:51:18.213Z"
-  },
-  {
-    "id": "1745841156005",
-    "qrCode": "1323",
-    "topicId": 1,
-    "topicName": "靜脈注射化學治療藥物注意事項",
-    "status": "completed",
-    "score": 40,
-    "maxScore": 100,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-28T11:52:36.005Z"
-  },
-  {
-    "id": "1745841185369",
-    "qrCode": "1323",
-    "topicId": 2,
-    "topicName": "化學治療的簡介",
-    "status": "viewing",
-    "score": 0,
-    "maxScore": 0,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-28T11:53:05.369Z"
-  },
-  {
-    "id": "1745850557091",
-    "qrCode": "112",
-    "topicId": 2,
-    "topicName": "化學治療的簡介",
-    "status": "viewing",
-    "score": 0,
-    "maxScore": 0,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-28T14:29:17.091Z"
-  },
-  {
-    "id": "1745850623856",
-    "qrCode": "112",
-    "topicId": 2,
-    "topicName": "化學治療的簡介",
-    "status": "completed",
-    "score": 0,
-    "maxScore": 100,
-    "nurseAcknowledged": false,
-    "timestamp": "2025-04-28T14:30:23.856Z"
   }
 ]
