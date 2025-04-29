@@ -417,7 +417,60 @@ function returnToHome() {
         behavior: 'smooth'
     });
 }
+// 在 index.js 中添加下面的代碼，用於處理 QR Code 掃描後的床號匹配
 
+// 獲取床號對應的主題配置
+async function getBedTopics(bedNumber) {
+    try {
+        // 讀取床號配置
+        let bedConfigurations = [];
+        try {
+            const data = await window.readGitHubFile('bed_configurations.json');
+            bedConfigurations = JSON.parse(data);
+        } catch (error) {
+            console.warn('無法讀取床號配置:', error);
+            return null;
+        }
+        
+        // 查找匹配的床號配置
+        const config = bedConfigurations.find(c => c.bedNumber === bedNumber);
+        return config || null;
+    } catch (error) {
+        console.error('獲取床號主題出錯:', error);
+        return null;
+    }
+}
+
+// 處理 QR Code 掃描結果
+async function handleQRCodeScan(qrResult) {
+    const qrcodeResult = document.getElementById('qrcode-result');
+    qrcodeResult.value = qrResult;
+    
+    // 根據床號獲取配置的主題列表
+    const config = await getBedTopics(qrResult);
+    
+    if (config && config.topics && config.topics.length > 0) {
+        console.log(`為床號 ${qrResult} 找到配置: ${config.groupName}`);
+        
+        // 根據配置的主題過濾顯示主題列表
+        const topicCards = document.querySelectorAll('.topic-card');
+        let visibleCount = 0;
+        
+        topicCards.forEach(card => {
+            const topicId = card.dataset.id;
+            if (config.topics.includes(topicId)) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // 顯示配置名稱
+        const topicSection = document.getElementById('topic-selection');
+        topicSection.querySelector('h2').textContent = `請選擇衛教主題 - ${config.groupName}`;
+        
+        //
 // 頁面初始化
 document.addEventListener('DOMContentLoaded', function() {
     // 如果已經認證，初始化頁面
