@@ -470,7 +470,85 @@ async function handleQRCodeScan(qrResult) {
         const topicSection = document.getElementById('topic-selection');
         topicSection.querySelector('h2').textContent = `請選擇衛教主題 - ${config.groupName}`;
         
-        //
+        // 如果只有一個主題，自動選擇
+        if (visibleCount === 1) {
+            const visibleCard = Array.from(topicCards).find(card => card.style.display !== 'none');
+            if (visibleCard) {
+                visibleCard.click(); // 自動選擇唯一顯示的主題
+                document.getElementById('submit-topic').click(); // 自動提交
+            }
+        }
+        
+        // 顯示床號配置的提示訊息
+        showSystemMessage(`已載入床號 ${qrResult} 的衛教主題配置：${config.groupName}`, 'success');
+    } else {
+        console.log(`未找到床號 ${qrResult} 的配置`);
+        
+        // 顯示所有主題
+        const topicCards = document.querySelectorAll('.topic-card');
+        topicCards.forEach(card => {
+            card.style.display = 'block';
+        });
+        
+        // 重置標題
+        const topicSection = document.getElementById('topic-selection');
+        topicSection.querySelector('h2').textContent = '請選擇衛教主題';
+        
+        // 顯示提示訊息
+        showSystemMessage(`未找到床號 ${qrResult} 的特定配置，顯示所有衛教主題`, 'info');
+    }
+}
+
+// 顯示系統訊息
+function showSystemMessage(message, type = 'info') {
+    const systemMessages = document.getElementById('system-messages');
+    
+    const msgElement = document.createElement('div');
+    msgElement.className = `${type}-message`;
+    msgElement.innerHTML = `
+        ${message}
+        <button onclick="this.parentNode.remove();" class="close-message">關閉</button>
+    `;
+    
+    systemMessages.appendChild(msgElement);
+    
+    // 自動移除訊息
+    setTimeout(() => {
+        if (msgElement.parentNode) {
+            msgElement.remove();
+        }
+    }, 5000);
+}
+
+// 修改原有的 QR Code 掃描函數，使其調用上面的處理函數
+// 在原始的 qrcode.js 中找到掃描成功的處理部分，添加對 handleQRCodeScan 的調用
+
+// 假設原始代碼類似於：
+/*
+function onScanSuccess(qrMessage) {
+    const qrcodeResult = document.getElementById('qrcode-result');
+    qrcodeResult.value = qrMessage;
+    closeQRScanner();
+}
+*/
+
+// 修改為：
+function onScanSuccess(qrMessage) {
+    const qrcodeResult = document.getElementById('qrcode-result');
+    qrcodeResult.value = qrMessage;
+    closeQRScanner();
+    
+    // 調用床號處理函數
+    handleQRCodeScan(qrMessage);
+}
+
+// 也可以監聽手動輸入的 QR Code 結果
+document.getElementById('qrcode-result').addEventListener('change', function() {
+    const value = this.value.trim();
+    if (value) {
+        handleQRCodeScan(value);
+    }
+});
 // 頁面初始化
 document.addEventListener('DOMContentLoaded', function() {
     // 如果已經認證，初始化頁面
