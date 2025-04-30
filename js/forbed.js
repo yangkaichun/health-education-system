@@ -5,7 +5,7 @@ let topics = [];
 let selectedTopic = null;
 let currentQuestionnaire = null;
 let isInitialized = false;
-let bedTopicMappings = []; // 存儲床號與題組的對應關係
+let bedTopicMapping = []; // 存儲床號與題組的對應關係
 
 // 當 GitHub API 認證完成時
 function onAuthenticated() {
@@ -18,12 +18,7 @@ function onAuthenticated() {
     initializeGitHubStorage().then(success => {
         if (success) {
             // 先載入床號與題組的對應關係
-            loadBedTopicMappings().then(() => {
-                loadTopics();
-                setupEventListeners();
-            }).catch(error => {
-                console.error('載入床號題組對應關係錯誤:', error);
-                // 即使床號題組對應關係載入失敗，仍然繼續載入所有主題
+            loadBedTopicMapping().then(() => {
                 loadTopics();
                 setupEventListeners();
             });
@@ -38,24 +33,29 @@ function onAuthenticated() {
 }
 
 // 載入床號與題組的對應關係
-async function loadBedTopicMappings() {
+async function loadBedTopicMapping() {
     try {
-        // 從 GitHub 存儲中獲取床號題組對應關係
-        const mappingsData = await getFile('data/bed-topic-mapping.json');
+        // 從GitHub存儲中載入床號與題組對應關係
+        const mappingData = await fetchFileFromGitHub('data/bed-topic-mapping.json');
         
-        if (mappingsData && typeof mappingsData === 'string') {
-            bedTopicMappings = JSON.parse(mappingsData);
-            console.log('床號題組對應關係載入成功:', bedTopicMappings);
+        if (mappingData) {
+            bedTopicMapping = JSON.parse(mappingData);
+            console.log('床號與題組對應關係載入成功:', bedTopicMapping);
         } else {
-            console.warn('床號題組對應關係資料為空或無效');
-            bedTopicMappings = [];
+            console.warn('未找到床號與題組對應關係，使用空數組');
+            bedTopicMapping = [];
         }
     } catch (error) {
-        console.error('載入床號題組對應關係失敗:', error);
-        // 如果發生錯誤，設置為空陣列
-        bedTopicMappings = [];
-        throw error;
+        console.error('載入床號與題組對應關係錯誤:', error);
+        showNotification('載入床號與題組對應關係時發生錯誤', 'error');
+        bedTopicMapping = [];
     }
+}
+
+// 根據床號獲取對應的題組ID列表
+function getTopicIdsByBedNumber(bedNumber) {
+    const mapping = bedTopicMapping.find(item => item.bedNumber === bedNumber);
+    return mapping ? mapping.topicIds : null;
 }
 
 // 設置事件監聽器
@@ -78,49 +78,66 @@ function setupEventListeners() {
         returnHomeBtn.addEventListener('click', returnToHome);
     }
     
-    // QR Code 結果更新時觸發重新載入主題列表
+    // QR Code 掃描完成後重新載入主題列表
     const qrCodeResult = document.getElementById('qrcode-result');
     if (qrCodeResult) {
         qrCodeResult.addEventListener('change', function() {
-            // 重新渲染主題列表，以顯示與床號相關的主題
-            renderTopics();
+            filterTopicsByBedNumber(this.value);
         });
     }
 }
 
-// 獲取床號對應的主題ID列表
-function getTopicIdsForBedNumber(bedNumber) {
-    // 如果床號或對應關係為空，返回空陣列
-    if (!bedNumber || !bedTopicMappings || bedTopicMappings.length === 0) {
-        return null; // 返回 null 表示沒有限制
+// 根據床號過濾顯示對應的題組
+function filterTopicsByBedNumber(bedNumber) {
+    if (!bedNumber) return;
+    
+    console.log('過濾床號:', bedNumber);
+    const topicIds = getTopicIdsByBedNumber(bedNumber);
+    
+    if (!topicIds || topicIds.length === 0) {
+        console.log('未找到該床號對應的題組設定，顯示所有主題');
+        renderTopics(topics);
+        return;
     }
     
-    // 查找該床號的對應關係
-    const mapping = bedTopicMappings.find(m => m.bedNumber === bedNumber);
+    console.log('找到床號對應的題組:', topicIds);
+    // 過濾出床號對應的題組
+    const filteredTopics = topics.filter(topic => topicIds.includes(topic.id));
+    renderTopics(filteredTopics);
     
-    // 如果找到對應關係，返回主題ID列表
-    if (mapping && Array.isArray(mapping.topicIds)) {
-        return mapping.topicIds;
+    // 如果只有一個題組，自動選擇
+    if (filteredTopics.length === 1) {
+        selectTopic(filteredTopics[0]);
+        // 如果是自動選擇的，可以考慮自動載入影片
+        // document.getElementById('submit-topic').click();
     }
-    
-    return null; // 返回 null 表示沒有限制
 }
 
 // 載入衛教主題
 async function loadTopics() {
     try {
-        topics = await getAllTopics();
+        const allTopics = await getAllTopics();
         
-        if (!Array.isArray(topics) || topics.length === 0) {
+        if (!Array.isArray(allTopics) || allTopics.length === 0) {
             console.warn('Empty or invalid topics data, initializing defaults');
             topics = Array.from({ length: 30 }, (_, i) => ({
                 id: i + 1,
                 name: `衛教主題 ${i + 1}`,
                 youtubeUrl: ''
             }));
+        } else {
+            topics = allTopics;
         }
         
-        renderTopics();
+        // 檢查是否已掃描QR Code
+        const qrCodeResult = document.getElementById('qrcode-result');
+        if (qrCodeResult && qrCodeResult.value) {
+            // 如果已掃描QR Code，根據床號過濾主題
+            filterTopicsByBedNumber(qrCodeResult.value);
+        } else {
+            // 否則顯示所有主題
+            renderTopics(topics);
+        }
     } catch (error) {
         console.error('Error loading topics:', error);
         showNotification('載入衛教主題時發生錯誤: ' + error.message, 'error');
@@ -128,26 +145,19 @@ async function loadTopics() {
 }
 
 // 渲染衛教主題列表
-function renderTopics() {
+function renderTopics(topicsToRender) {
     const topicList = document.getElementById('topic-list');
     
     if (!topicList) return;
     
     topicList.innerHTML = '';
     
-    // 獲取當前掃描的床號
-    const bedNumber = document.getElementById('qrcode-result').value.trim();
+    if (!topicsToRender || topicsToRender.length === 0) {
+        topicList.innerHTML = '<div class="empty-topics">沒有可用的衛教主題</div>';
+        return;
+    }
     
-    // 獲取床號對應的主題ID列表
-    const allowedTopicIds = getTopicIdsForBedNumber(bedNumber);
-    
-    // 過濾並渲染主題列表
-    topics.forEach(topic => {
-        // 如果有床號限制，只顯示允許的主題
-        if (allowedTopicIds !== null && !allowedTopicIds.includes(topic.id)) {
-            return; // 跳過不在允許列表中的主題
-        }
-        
+    topicsToRender.forEach(topic => {
         const topicElement = document.createElement('div');
         topicElement.className = 'topic-item';
         topicElement.dataset.id = topic.id;
@@ -157,20 +167,6 @@ function renderTopics() {
         
         topicList.appendChild(topicElement);
     });
-    
-    // 如果過濾後沒有主題可顯示，顯示提示訊息
-    if (topicList.children.length === 0) {
-        const noTopicsMsg = document.createElement('div');
-        noTopicsMsg.className = 'no-topics-message';
-        
-        if (bedNumber) {
-            noTopicsMsg.textContent = `床號 ${bedNumber} 沒有指定的衛教主題。請確認床號正確或聯繫管理員。`;
-        } else {
-            noTopicsMsg.textContent = '請先掃描床號 QR Code';
-        }
-        
-        topicList.appendChild(noTopicsMsg);
-    }
 }
 
 // 選擇衛教主題
@@ -350,6 +346,12 @@ function renderQuestionnaire() {
         
         form.appendChild(questionDiv);
     });
+    
+    // 顯示提交按鈕
+    const submitBtn = document.getElementById('submit-questionnaire');
+    if (submitBtn) {
+        submitBtn.style.display = 'block';
+    }
 }
 
 // 提交問卷
@@ -478,7 +480,8 @@ async function submitQuestionnaire() {
 // 返回主頁
 function returnToHome() {
     // 重設頁面狀態
-    document.getElementById('qrcode-result').value = '';
+    const qrCodeResult = document.getElementById('qrcode-result');
+    const bedNumber = qrCodeResult.value;
     document.getElementById('submit-topic').disabled = true;
     
     document.getElementById('completion-message').style.display = 'none';
@@ -494,8 +497,12 @@ function returnToHome() {
     selectedTopic = null;
     currentQuestionnaire = null;
     
-    // 重新渲染主題列表
-    renderTopics();
+    // 根據床號重新過濾題組
+    if (bedNumber) {
+        filterTopicsByBedNumber(bedNumber);
+    } else {
+        renderTopics(topics);
+    }
     
     // 滾動到頂部
     window.scrollTo({
@@ -513,10 +520,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 顯示影片結束時的問卷
     document.addEventListener('videoEnded', function() {
+        // 顯示問卷區域
+        const questionnaireSection = document.getElementById('questionnaire-section');
+        if (questionnaireSection) {
+            questionnaireSection.style.display = 'block';
+        }
+        
         renderQuestionnaire();
         
         // 滾動到問卷部分
-        const questionnaireSection = document.getElementById('questionnaire-section');
         if (questionnaireSection) {
             questionnaireSection.scrollIntoView({ 
                 behavior: 'smooth',
@@ -526,4 +538,144 @@ document.addEventListener('DOMContentLoaded', function() {
         
         showNotification('請填寫問卷', 'info');
     });
+    
+    // 設置QR碼掃描器事件
+    const scanButton = document.getElementById('scan-button');
+    if (scanButton) {
+        scanButton.addEventListener('click', function() {
+            const scanner = document.getElementById('qrcode-scanner');
+            if (scanner) {
+                scanner.style.display = 'block';
+                startQRScanner();
+            }
+        });
+    }
+    
+    const closeScanner = document.getElementById('close-scanner');
+    if (closeScanner) {
+        closeScanner.addEventListener('click', function() {
+            const scanner = document.getElementById('qrcode-scanner');
+            if (scanner) {
+                scanner.style.display = 'none';
+                stopQRScanner();
+            }
+        });
+    }
 });
+
+// QR Code 掃描器相關功能
+let qrScanner = null;
+
+function startQRScanner() {
+    const videoElement = document.getElementById('preview');
+    
+    if (!videoElement) return;
+    
+    if (window.Html5Qrcode) {
+        qrScanner = new Html5Qrcode("preview");
+        
+        qrScanner.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            (decodedText) => {
+                // 掃描成功後
+                document.getElementById('qrcode-result').value = decodedText;
+                
+                // 觸發change事件以過濾主題
+                const event = new Event('change');
+                document.getElementById('qrcode-result').dispatchEvent(event);
+                
+                // 關閉掃描器
+                qrScanner.stop().then(() => {
+                    document.getElementById('qrcode-scanner').style.display = 'none';
+                    showNotification('QR Code 掃描成功: ' + decodedText, 'success');
+                }).catch(error => {
+                    console.error('關閉掃描器錯誤:', error);
+                });
+            },
+            (errorMessage) => {
+                // 掃描錯誤處理
+                console.warn('QR掃描錯誤:', errorMessage);
+            }
+        ).catch((err) => {
+            console.error('啟動掃描器錯誤:', err);
+            showNotification('無法啟動相機，請確認已授予相機權限', 'error');
+        });
+    } else if (window.Instascan && window.Instascan.Scanner) {
+        // 備用方案使用 Instascan
+        qrScanner = new Instascan.Scanner({ video: videoElement });
+        
+        qrScanner.addListener('scan', function(content) {
+            document.getElementById('qrcode-result').value = content;
+            
+            // 觸發change事件以過濾主題
+            const event = new Event('change');
+            document.getElementById('qrcode-result').dispatchEvent(event);
+            
+            // 關閉掃描器
+            qrScanner.stop();
+            document.getElementById('qrcode-scanner').style.display = 'none';
+            showNotification('QR Code 掃描成功: ' + content, 'success');
+        });
+        
+        Instascan.Camera.getCameras().then(function(cameras) {
+            if (cameras.length > 0) {
+                // 優先使用後置相機
+                let selectedCamera = cameras[0];
+                for (let camera of cameras) {
+                    if (camera.name && camera.name.toLowerCase().includes('back')) {
+                        selectedCamera = camera;
+                        break;
+                    }
+                }
+                qrScanner.start(selectedCamera);
+            } else {
+                showNotification('未檢測到相機', 'error');
+            }
+        }).catch(function(error) {
+            console.error('獲取相機列表錯誤:', error);
+            showNotification('無法訪問相機，請確認已授予相機權限', 'error');
+        });
+    } else {
+        showNotification('未載入QR碼掃描庫，請重新載入頁面', 'error');
+    }
+}
+
+function stopQRScanner() {
+    if (qrScanner) {
+        if (typeof qrScanner.stop === 'function') {
+            qrScanner.stop().catch(error => {
+                console.error('停止掃描器錯誤:', error);
+            });
+        }
+        qrScanner = null;
+    }
+}
+
+// GitHub 存儲相關功能擴展
+
+// 獲取床號和題組對應的設定
+async function getBedTopicMappings() {
+    try {
+        const data = await fetchFileFromGitHub('data/bed-topic-mapping.json');
+        return data ? JSON.parse(data) : [];
+    } catch (error) {
+        console.error('獲取床號和題組對應設定錯誤:', error);
+        return [];
+    }
+}
+
+// 保存床號和題組對應的設定
+async function saveBedTopicMappings(mappings) {
+    try {
+        const content = JSON.stringify(mappings, null, 2);
+        const result = await saveFileToGitHub('data/bed-topic-mapping.json', content);
+        return result;
+    } catch (error) {
+        console.error('保存床號和題組對應設定錯誤:', error);
+        throw error;
+    }
+}
