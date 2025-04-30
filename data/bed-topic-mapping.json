@@ -1,10 +1,20 @@
 [
-    {
-      "bedNumber": "7011",
-      "topicIds": [1, 3, 7]
-    },
-    {
-      "bedNumber": "7012",
-      "topicIds": [2, 5, 10]
-    }
-  ]
+  {
+    "bedNumber": "7011",
+    "topicIds": [1, 3, 7],
+    "createdAt": "2025-04-30T08:00:00.000Z",
+    "updatedAt": "2025-04-30T08:00:00.000Z"
+  },
+  {
+    "bedNumber": "7012",
+    "topicIds": [2, 5],
+    "createdAt": "2025-04-30T08:05:00.000Z",
+    "updatedAt": "2025-04-30T08:05:00.000Z"
+  },
+  {
+    "bedNumber": "7013",
+    "topicIds": [1, 2, 4, 6],
+    "createdAt": "2025-04-30T08:10:00.000Z",
+    "updatedAt": "2025-04-30T08:10:00.000Z"
+  }
+]
