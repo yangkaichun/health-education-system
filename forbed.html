@@ -3,67 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>病床衛教影片觀看 - 衛教影片觀看系統</title>
-    <link rel="stylesheet" href="./css/styles.css">
-    <script src="./js/auth.js"></script>
-    <script src="./js/forbed.js"></script>
+    <title>選擇病床 - 衛教影片觀看系統</title>
+    
+    <!-- 使用與原網站相同的 CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 引入 Bootstrap (如果原網站有使用) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <header>
         <h1>衛教影片觀看系統</h1>
         <nav>
             <ul>
-                <li><a href="./index.html">影片觀看</a></li>
-                <li><a href="./results.html">結果列表</a></li>
-                <li><a href="./admin.html">影片管理</a></li>
-                <li><a href="./setting.html">床號設定</a></li>
+                <li><a href="index.html">首頁</a></li>
+                <li><a href="settings.html">設定題組與病床</a></li>
+                <li><a href="#" class="active">選擇病床</a></li>
             </ul>
         </nav>
     </header>
-
-    <main>
-        <div class="bed-input-container">
-            <input type="text" id="bed-qr-input" placeholder="請掃描病床 QR Code">
-            <button id="scan-qr-btn">掃描 QR Code</button>
+    
+    <main class="container mt-4">
+        <h2>請輸入或掃描病床號碼</h2>
+        
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="bedForm">
+                            <div class="mb-3">
+                                <label for="bedNumber" class="form-label">病床號碼</label>
+                                <input type="text" class="form-control" id="bedNumber" placeholder="請輸入病床號碼" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">確認</button>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p>或使用 QR 碼掃描</p>
+                            <button id="scanQRCode" class="btn btn-secondary">
+                                <span class="me-2">掃描 QR 碼</span>
+                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M2 2h2v2H2V2Z"/>
+                                    <path d="M6 0v6H0V0h6ZM5 1H1v4h4V1ZM4 12H2v2h2v-2Z"/>
+                                    <path d="M6 10v6H0v-6h6Zm-5 1v4h4v-4H1Zm11-9h2v2h-2V2Z"/>
+                                    <path d="M10 0v6h6V0h-6Zm5 1v4h-4V1h4ZM8 1V0h1v2H8v2H7V1h1Zm0 5V4h1v2H8ZM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8H6Zm0 0v1H2V8H1v1H0V7h3v1h3Zm10 1h-1V7h1v2Zm-1 0h-1v2h2v-1h-1V9Zm-4 0h2v1h-1v1h-1V9Zm2 3v-1h-1v1h-1v1h1v1h1v-2Zm0 0h3v1h-2v1h-1v-2Zm-4-1v1h1v-2H7v1h2Z"/>
+                                    <path d="M7 12h1v3h4v1H7v-4Zm9 2v2h-3v-1h2v-1h1Z"/>
+                                </svg>
+                            </button>
+                            <div id="qrReader" class="mt-3 d-none">
+                                <!-- QR 碼掃描區域 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <section id="topic-selection">
-            <h2>請選擇衛教主題</h2>
-            <div id="topics-container">
-                <p id="loading-topics">載入衛教主題中...</p>
-                <!-- 題組會根據床號映射從 bed-topic-mapping.json 中動態載入 -->
+        
+        <div id="topicContent" class="d-none">
+            <!-- 這裡會根據選擇的病床顯示相應的題組 -->
+            <h3 id="bedTitle"></h3>
+            <div id="topicList" class="row">
+                <!-- 動態載入題組列表 -->
             </div>
-        </section>
-
-        <section id="video-section" style="display: none;">
-            <h2>衛教影片</h2>
-            <div id="video-container">
-                <!-- 影片會在這裡顯示 -->
-            </div>
-        </section>
-
-        <section id="questionnaire-section" style="display: none;">
-            <h2>問卷填寫</h2>
-            <div id="questionnaire-container">
-                <!-- 問卷會在這裡顯示 -->
-            </div>
-            <button id="submit-questionnaire" class="primary-button">提交問卷</button>
-        </section>
-
-        <section id="completion-section" style="display: none;">
-            <h2>問卷填寫</h2>
-            <p>已將問卷填畢，將通知護理師與您說明。</p>
-        </section>
+        </div>
     </main>
-
+    
     <footer>
         <p>© 2025 衛教影片觀看系統(By 楊凱鈞/FET)</p>
-        <p>版本: 2.0.0 (支援床號題組映射)</p>
     </footer>
-
-    <!-- 通知彈窗 -->
-    <div id="notification" class="notification">
-        <p id="notification-message"></p>
-    </div>
+    
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.4/dist/html5-qrcode.min.js"></script>
+    <script src="js/select-bed.js"></script>
 </body>
 </html>
