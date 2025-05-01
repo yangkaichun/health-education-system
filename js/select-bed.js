@@ -1,3 +1,4 @@
+document.addEventListener('DOMContentLoaded', function() {
     // 初始化
     let html5QrCode = null; // QR 碼掃描器實例
     
