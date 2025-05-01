@@ -6,6 +6,17 @@ let bedSettings = []; // 存儲所有床號設定
 let topics = []; // 存儲所有主題
 let isInitialized = false;
 
+// 當頁面載入完成
+document.addEventListener('DOMContentLoaded', function() {
+    // 檢查是否已登入
+    if (typeof isAuthenticated === 'function' && isAuthenticated()) {
+        onAuthenticated();
+    } else {
+        // 若尚未登入，監聽登入事件
+        document.addEventListener('auth-success', onAuthenticated);
+    }
+});
+
 // 當 GitHub API 認證完成時
 function onAuthenticated() {
     // 避免重複初始化
@@ -30,12 +41,6 @@ function onAuthenticated() {
 
 // 設置事件監聽器
 function setupEventListeners() {
-    // 新增床號按鈕
-    const addBedBtn = document.getElementById('add-bed-button');
-    if (addBedBtn) {
-        addBedBtn.addEventListener('click', addBedSetting);
-    }
-
     // 儲存設定按鈕
     const saveSettingsBtn = document.getElementById('save-settings');
     if (saveSettingsBtn) {
@@ -70,9 +75,16 @@ function setupEventListeners() {
 // 載入所有題組
 async function loadTopics() {
     try {
-        const topicsData = await fetchFileFromGitHub('data/topics.json');
+        // 直接使用topics.json的相對路徑
+        const response = await fetch('./data/topics.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const topicsData = await response.json();
+        
         if (topicsData) {
             topics = topicsData;
+            console.log("成功載入題組:", topics);
             populateTopicSelector();
         } else {
             showNotification('無法載入題組資料', 'error');
@@ -80,6 +92,18 @@ async function loadTopics() {
     } catch (error) {
         console.error('載入題組錯誤:', error);
         showNotification('載入題組時發生錯誤: ' + error.message, 'error');
+        
+        // 嘗試使用fetchFileFromGitHub作為備選方案
+        try {
+            const topicsData = await fetchFileFromGitHub('data/topics.json');
+            if (topicsData) {
+                topics = topicsData;
+                console.log("通過GitHub API載入題組:", topics);
+                populateTopicSelector();
+            }
+        } catch (githubError) {
+            console.error('GitHub API載入題組錯誤:', githubError);
+        }
     }
 }
 
@@ -192,7 +216,21 @@ async function saveBedSetting() {
     
     try {
         // 載入現有的床號設定
-        let mappings = await fetchFileFromGitHub('data/bed-topic-mapping.json') || [];
+        let mappings = [];
+        try {
+            // 先嘗試直接從文件獲取
+            const response = await fetch('./data/bed-topic-mapping.json');
+            if (response.ok) {
+                mappings = await response.json();
+            }
+        } catch (error) {
+            console.log('直接獲取映射失敗，嘗試通過GitHub API獲取');
+            // 如果直接獲取失敗，嘗試通過GitHub API獲取
+            const githubMappings = await fetchFileFromGitHub('data/bed-topic-mapping.json');
+            if (githubMappings) {
+                mappings = githubMappings;
+            }
+        }
         
         // 檢查是否已存在該床號
         const existingIndex = mappings.findIndex(item => item.bedNumber === bedNumber);
@@ -234,17 +272,33 @@ async function saveBedSetting() {
 // 載入床號設定
 async function loadBedSettings() {
     try {
+        // 嘗試直接從文件獲取
+        try {
+            const response = await fetch('./data/bed-topic-mapping.json');
+            if (response.ok) {
+                bedSettings = await response.json();
+                console.log("成功載入床號設定:", bedSettings);
+                displayBedSettings();
+                return;
+            }
+        } catch (error) {
+            console.log('直接獲取床號設定失敗，嘗試通過GitHub API獲取');
+        }
+        
+        // 如果直接獲取失敗，嘗試通過GitHub API獲取
         const mappings = await fetchFileFromGitHub('data/bed-topic-mapping.json');
         if (mappings) {
             bedSettings = mappings;
-            displayBedSettings();
+            console.log("通過GitHub API載入床號設定:", bedSettings);
         } else {
             bedSettings = [];
-            displayBedSettings();
         }
+        displayBedSettings();
     } catch (error) {
         console.error('載入床號設定錯誤:', error);
         showNotification('載入床號設定時發生錯誤: ' + error.message, 'error');
+        bedSettings = [];
+        displayBedSettings();
     }
 }
 
@@ -386,7 +440,19 @@ async function deleteBedSetting(bedNumber) {
         hideConfirmationDialog();
         
         // 載入現有設定
-        let mappings = await fetchFileFromGitHub('data/bed-topic-mapping.json') || [];
+        let mappings = [];
+        try {
+            const response = await fetch('./data/bed-topic-mapping.json');
+            if (response.ok) {
+                mappings = await response.json();
+            }
+        } catch (error) {
+            // 如果直接獲取失敗，嘗試通過GitHub API獲取
+            const githubMappings = await fetchFileFromGitHub('data/bed-topic-mapping.json');
+            if (githubMappings) {
+                mappings = githubMappings;
+            }
+        }
         
         // 過濾掉要刪除的設定
         mappings = mappings.filter(item => item.bedNumber !== bedNumber);
