@@ -8,32 +8,65 @@ let currentQuestionnaire = null;
 let isInitialized = false; 
 let bedTopicMapping = []; // 存儲床號與題組的對應關係
 
+// 當頁面載入完成
+document.addEventListener('DOMContentLoaded', function() {
+    // 檢查是否已登入，如果沒有登入要求也可以運行
+    // 若auth.js中有isAuthenticated函數，則使用它，否則直接初始化
+    if (typeof isAuthenticated === 'function') {
+        if (isAuthenticated()) {
+            onAuthenticated();
+        } else {
+            document.addEventListener('auth-success', onAuthenticated);
+        }
+    } else {
+        onAuthenticated();
+    }
+});
+
 // 當 GitHub API 認證完成時 
 function onAuthenticated() { 
     // 避免重複初始化 
     if (isInitialized) return; 
     isInitialized = true;
 
-    console.log("認證成功，初始化影片觀看頁面");
+    console.log("初始化影片觀看頁面");
 
-    initializeGitHubStorage().then(success => { 
-        if (success) { 
-            // 先載入床號與題組的對應關係 
-            loadBedTopicMapping().then(() => { 
-                loadTopics(); 
-                setupEventListeners(); 
-            }); 
-        } else { 
-            // 如果初始化存儲失敗，顯示錯誤 
-            showNotification('初始化儲存失敗，請檢查 GitHub 連接', 'error'); 
-        } 
-    }).catch(error => { 
-        console.error('初始化存儲錯誤:', error); 
-        showNotification('初始化存儲時發生錯誤: ' + error.message, 'error'); 
-    }); 
+    // 檢查是否有initializeGitHubStorage函數
+    if (typeof initializeGitHubStorage === 'function') {
+        initializeGitHubStorage().then(success => { 
+            if (success) { 
+                // 先載入床號與題組的對應關係 
+                loadBedTopicMapping().then(() => { 
+                    loadTopics(); 
+                    setupEventListeners(); 
+                }); 
+            } else { 
+                // 如果初始化存儲失敗，顯示錯誤 
+                showNotification('初始化儲存失敗，請檢查 GitHub 連接', 'error'); 
+                // 嘗試直接從文件載入
+                directLoad();
+            } 
+        }).catch(error => { 
+            console.error('初始化存儲錯誤:', error); 
+            showNotification('初始化存儲時發生錯誤，嘗試直接載入資料', 'warning'); 
+            // 嘗試直接從文件載入
+            directLoad();
+        });
+    } else {
+        // 如果沒有GitHub存儲功能，直接從文件載入
+        directLoad();
+    }
 }
 
-// 載入床號與題組的對應關係 
+// 直接從文件載入資料
+function directLoad() {
+    loadBedTopicMappingDirect().then(() => {
+        loadTopicsDirect();
+        setupEventListeners();
+    });
+}
+
+// 載入床號與題組的對應關係 (通過GitHub API)
 async function loadBedTopicMapping() { 
     try { 
         // 從GitHub存儲中載入床號與題組對應關係 
@@ -54,20 +87,60 @@ async function loadBedTopicMapping() {
     }
 }
 
-// 載入所有衛教主題
+// 直接從文件載入床號與題組映射
+async function loadBedTopicMappingDirect() {
+    try {
+        const response = await fetch('./data/bed-topic-mapping.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        bedTopicMapping = await response.json();
+        console.log("直接載入床號與題組映射：", bedTopicMapping);
+        return true;
+    } catch (error) {
+        console.error('直接載入床號題組映射錯誤:', error);
+        showNotification('載入床號題組映射時發生錯誤: ' + error.message, 'error');
+        bedTopicMapping = [];
+        return false;
+    }
+}
+
+// 載入所有衛教主題 (通過GitHub API)
 async function loadTopics() {
     try {
         const topicsData = await fetchFileFromGitHub('data/topics.json');
         
         if (topicsData) {
             topics = topicsData;
+            console.log("載入衛教主題：
+                           topics = topicsData;
             console.log("載入衛教主題：", topics);
         } else {
             showNotification('無法載入衛教主題', 'error');
+            // 嘗試直接從文件載入
+            await loadTopicsDirect();
         }
     } catch (error) {
         console.error('載入主題錯誤:', error);
+        showNotification('載入主題時發生錯誤，嘗試直接載入', 'warning');
+        // 嘗試直接從文件載入
+        await loadTopicsDirect();
+    }
+}
+
+// 直接從文件載入題組
+async function loadTopicsDirect() {
+    try {
+        const response = await fetch('./data/topics.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        topics = await response.json();
+        console.log("直接載入衛教主題：", topics);
+    } catch (error) {
+        console.error('直接載入主題錯誤:', error);
         showNotification('載入主題時發生錯誤: ' + error.message, 'error');
+        topics = [];
     }
 }
 
@@ -113,6 +186,9 @@ function handleQRCodeScan() {
 
 // 根據床號加載對應的題組
 function loadTopicsForBed(bedNumber) {
+    console.log(`正在尋找床號 ${bedNumber} 的題組映射...`);
+    console.log("床號映射資料:", bedTopicMapping);
+
     // 在床號映射中查找對應的題組
     const bedSetting = bedTopicMapping.find(item => item.bedNumber === bedNumber);
 
@@ -123,9 +199,11 @@ function loadTopicsForBed(bedNumber) {
 
     // 獲取該床號對應的題組ID
     const topicIds = bedSetting.topicIds;
+    console.log(`床號 ${bedNumber} 對應的題組ID:`, topicIds);
     
     // 過濾出對應的題組
     const matchedTopics = topics.filter(topic => topicIds.includes(topic.id));
+    console.log("匹配到的題組:", matchedTopics);
     
     if (matchedTopics.length === 0) {
         showNotification(`床號 ${bedNumber} 的題組設定無效或已被刪除`, 'error');
@@ -208,7 +286,7 @@ function loadVideo(topic) {
         videoContainer.innerHTML = '<p>無效的 YouTube 影片連結</p>';
         
         // 直接顯示問卷
-      showQuestionnaire();
+        showQuestionnaire();
         return;
     }
 
@@ -281,8 +359,24 @@ async function loadQuestionnaire() {
     
     try {
         // 從 GitHub 載入問卷資料
-        const questionnairePath = `data/questionnaires/topic-${selectedTopic.id}.json`;
-        const questionnaire = await fetchFileFromGitHub(questionnairePath);
+        let questionnaire = null;
+        
+        // 嘗試直接從文件獲取
+        try {
+            const questionnairePath = `./data/questionnaires/topic-${selectedTopic.id}.json`;
+            const response = await fetch(questionnairePath);
+            if (response.ok) {
+                questionnaire = await response.json();
+            }
+        } catch (error) {
+            console.log('直接獲取問卷失敗，嘗試通過GitHub API獲取');
+        }
+        
+        // 如果直接獲取失敗，嘗試通過GitHub API獲取
+        if (!questionnaire && typeof fetchFileFromGitHub === 'function') {
+            const questionnairePath = `data/questionnaires/topic-${selectedTopic.id}.json`;
+            questionnaire = await fetchFileFromGitHub(questionnairePath);
+        }
         
         if (!questionnaire) {
             // 如果找不到問卷，創建預設問卷
@@ -295,7 +389,7 @@ async function loadQuestionnaire() {
         displayQuestionnaire(currentQuestionnaire);
     } catch (error) {
         console.error('載入問卷錯誤:', error);
-        showNotification('載入問卷時發生錯誤: ' + error.message, 'error');
+        showNotification('載入問卷時發生錯誤，使用預設問卷', 'warning');
         
         // 使用預設問卷
         currentQuestionnaire = createDefaultQuestionnaire();
@@ -452,9 +546,21 @@ async function submitQuestionnaire() {
     };
     
     try {
-        // 儲存問卷結果
-        const resultsPath = `data/results/${bedNumber}-${selectedTopic.id}-${Date.now()}.json`;
-        const saved = await saveFileToGitHub(resultsPath, JSON.stringify(result, null, 2));
+        let saved = false;
+        
+        // 嘗試使用GitHub API儲存
+        if (typeof saveFileToGitHub === 'function') {
+            const resultsPath = `data/results/${bedNumber}-${selectedTopic.id}-${Date.now()}.json`;
+            saved = await saveFileToGitHub(resultsPath, JSON.stringify(result, null, 2));
+        }
+        
+        // 如果沒有GitHub API或儲存失敗，嘗試使用localStorage
+        if (!saved) {
+            const localStorageKey = `questionnaire-result-${Date.now()}`;
+            localStorage.setItem(localStorageKey, JSON.stringify(result));
+            console.log('問卷結果已儲存到localStorage:', localStorageKey);
+            saved = true;
+        }
         
         if (saved) {
             // 顯示完成訊息
