@@ -3,88 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>床號與題組設定 - 衛教影片觀看系統</title>
-    <link rel="stylesheet" href="./css/styles.css">
-    <script src="./js/auth.js"></script>
-    <script src="./js/setting.js"></script>
+    <title>設定題組與病床 - 衛教影片觀看系統</title>
+    
+    <!-- 使用與原網站相同的 CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 引入 Bootstrap (如果原網站有使用) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <header>
-        <div class="login-status">
-            <span id="login-status-text">正在載入...</span>
-            <button id="login-button" class="login-button">請先登入系統</button>
-        </div>
         <h1>衛教影片觀看系統</h1>
         <nav>
             <ul>
-                <li><a href="./index.html">影片觀看</a></li>
-                <li><a href="./results.html">結果列表</a></li>
-                <li><a href="./admin.html">影片管理</a></li>
-                <li><a href="./setting.html" class="active">床號設定</a></li>
+                <li><a href="index.html">首頁</a></li>
+                <li><a href="#" class="active">設定題組與病床</a></li>
+                <li><a href="select-bed.html">選擇病床</a></li>
             </ul>
         </nav>
     </header>
-
-    <main>
-        <section id="bed-topic-config">
-            <h2>床號與題組設定</h2>
-            <div class="form-group">
-                <label for="bed-number">床號</label>
-                <input type="text" id="bed-number" placeholder="請輸入床號 (例如: A101)">
-            </div>
-            
-            <div class="form-group">
-                <label for="topic-selector">選擇衛教影片題組</label>
-                <select id="topic-selector" multiple>
-                    <!-- 會由JavaScript動態載入 topics.json 中的題組 -->
-                </select>
-            </div>
-            
-            <div class="selected-topics">
-                <p>已選擇的題組：</p>
-                <div id="selected-topics-container">
-                    <p id="no-topics-selected">尚未選擇任何題組</p>
-                </div>
-            </div>
-            
-            <div class="button-group">
-                <button id="clear-selection" class="secondary-button">清除選擇</button>
-                <button id="save-settings" class="primary-button">儲存設定</button>
-            </div>
-        </section>
+    
+    <main class="container mt-4">
+        <h2>題組與病床設定</h2>
         
-        <section id="current-settings">
-            <h2>現有床號設定</h2>
-            <div class="search-box">
-                <input type="text" id="search-bed" placeholder="搜尋床號...">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>管理題組群組和病床對應</h3>
             </div>
-            <div id="bed-settings-container">
-                <p id="no-settings-message">尚未有任何床號設定</p>
-                <!-- 已設定的床號會顯示在這裡 -->
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <p>© 2025 衛教影片觀看系統(By 楊凱鈞/FET)</p>
-        <p>版本: 2.0.0 (支援床號題組映射)</p>
-    </footer>
-
-    <!-- 確認彈窗 -->
-    <div id="confirmation-dialog" class="dialog">
-        <div class="dialog-content">
-            <h3>確認刪除</h3>
-            <p id="confirmation-message"></p>
-            <div class="button-group">
-                <button id="cancel-confirm" class="secondary-button">取消</button>
-                <button id="confirm-action" class="primary-button">確認</button>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h4>現有題組群組設定</h4>
+                    <div id="groupList" class="list-group mb-3">
+                        <!-- 這裡會動態顯示已設定的題組群組 -->
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <form id="groupForm">
+                    <h4>新增/編輯題組群組</h4>
+                    <div class="mb-3">
+                        <label for="groupName" class="form-label">群組名稱</label>
+                        <input type="text" class="form-control" id="groupName" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">選擇題組</label>
+                        <div id="topicSelection" class="mb-3">
+                            <!-- 這裡會動態載入所有可用的題組，供選擇 -->
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bedNumbers" class="form-label">相關聯病床號碼 (多個請用逗號分隔)</label>
+                        <input type="text" class="form-control" id="bedNumbers" placeholder="例如: 101,102,103">
+                    </div>
+                    
+                    <input type="hidden" id="editingId" value="">
+                    <button type="submit" class="btn btn-primary">儲存設定</button>
+                    <button type="button" id="cancelEdit" class="btn btn-secondary d-none">取消編輯</button>
+                </form>
             </div>
         </div>
-    </div>
-
-    <!-- 通知彈窗 -->
-    <div id="notification" class="notification">
-        <p id="notification-message"></p>
-    </div>
+    </main>
+    
+    <footer>
+        <p>© 2025 衛教影片觀看系統(By 楊凱鈞/FET)</p>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/settings.js"></script>
 </body>
 </html>
