@@ -7,7 +7,7 @@
     "status": "completed",
     "score": 70,
     "maxScore": 100,
-    "nurseAcknowledged": true,
+    "nurseAcknowledged": false,
     "timestamp": "2025-05-02T06:26:06.951Z"
   },
   {
