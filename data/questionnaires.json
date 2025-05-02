@@ -119,7 +119,62 @@
   },
   {
     "topicId": 3,
-    "questions": []
+    "questions": [
+      {
+        "type": "yesno",
+        "text": "移植物對抗宿主疾病反應產生的原因，目前已知是捐贈者的幹細 胞（移植物）將接受者（宿主）的組織器官視為外來異物而發動攻擊。",
+        "correctAnswer": "是",
+        "score": 10
+      },
+      {
+        "type": "yesno",
+        "text": "移植物對抗宿主疾病反應只會發生在使用他人的幹細胞時發生",
+        "correctAnswer": "是",
+        "score": 10
+      },
+      {
+        "type": "yesno",
+        "text": "移植物對抗宿主疾病反應分為急、慢性",
+        "correctAnswer": "是",
+        "score": 20
+      },
+      {
+        "type": "choice",
+        "text": "急性移植物對抗宿主反應有哪些?",
+        "options": [
+          "發生在移植後 100 天內",
+          "主要侵犯皮膚、肝臟、腸胃道等",
+          "腸胃道早期症狀為腹瀉",
+          "以上皆是"
+        ],
+        "correctOptionIndex": 3,
+        "score": 20
+      },
+      {
+        "type": "choice",
+        "text": "慢性移植物對抗宿主反應有哪些?",
+        "options": [
+          "發生在移植 100 天後",
+          "影響的器官比急性反應更為廣泛",
+          "嚴重程度亦有輕重之分",
+          "以上皆是"
+        ],
+        "correctOptionIndex": 3,
+        "score": 20
+      },
+      {
+        "type": "choice",
+        "text": "移植物對抗宿主反應於腸胃道症狀有哪些?",
+        "options": [
+          "吞嚥困難",
+          "吞嚥疼痛",
+          "腹痛",
+          "以上皆是"
+        ],
+        "correctOptionIndex": 0,
+        "score": 20
+      }
+    ]
   },
   {
     "topicId": 4,
