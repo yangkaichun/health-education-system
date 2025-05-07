@@ -449,5 +449,16 @@
     "maxScore": 0,
     "nurseAcknowledged": false,
     "timestamp": "2025-05-02T12:01:32.852Z"
+  },
+  {
+    "id": "1746580644380",
+    "qrCode": "101",
+    "topicId": 2,
+    "topicName": "ONC-05化學治療的簡介",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-05-07T01:17:24.380Z"
   }
 ]
