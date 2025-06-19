@@ -515,5 +515,16 @@
     "maxScore": 100,
     "nurseAcknowledged": false,
     "timestamp": "2025-05-08T08:18:20.139Z"
+  },
+  {
+    "id": "1750304953636",
+    "qrCode": "121",
+    "topicId": 1,
+    "topicName": "ONC-06靜脈注射化學治療藥物注意事項",
+    "status": "viewing",
+    "score": 0,
+    "maxScore": 0,
+    "nurseAcknowledged": false,
+    "timestamp": "2025-06-19T03:49:13.636Z"
   }
 ]
